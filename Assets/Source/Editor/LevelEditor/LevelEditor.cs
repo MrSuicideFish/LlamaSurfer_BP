@@ -275,9 +275,13 @@ public class LevelEditor : EditorTool
         if (GetCameraTrack() != null)
         {
             sceneView.sceneViewState.alwaysRefresh = true;
-            TeleportSceneCamera(Camera.main.transform.position, Camera.main.transform.forward);
-            HandleMouseControl(sceneView);
             
+            // move scene camera to the updated game camera's orientation
+            // game camera executes in edit mode and uses in-game properties for pos/rot offset from the path.
+            // instead of emulating this we take the game camera's orientation. NOTE: FOV/Effects will differ.
+            TeleportSceneCamera(Camera.main.transform.position, Camera.main.transform.forward);
+            
+            HandleMouseControl(sceneView);
             Handles.BeginGUI();
             
             using (new GUILayout.VerticalScope())
@@ -294,7 +298,6 @@ public class LevelEditor : EditorTool
             }
 
             Handles.EndGUI();
-            CameraController.Instance.UpdateTrackTarget();
         }
     }
 
@@ -386,7 +389,6 @@ public class LevelEditor : EditorTool
     private void Rebuild()
     {
         RebuildPlayerPath();
-        RebuildCameraPath();
     }
 
     private void RebuildPlayerPath()
@@ -422,26 +424,6 @@ public class LevelEditor : EditorTool
                     GetCameraTrack().AddTrackNode(newTrackNode);
                 }   
             }
-        }
-    }
-
-    private void RebuildCameraPath()
-    {
-        // rebuild camera path
-        CinemachinePath _cameraPath = FindObjectOfType<CinemachinePath>();
-        if (_cameraPath == null)
-        {
-            GameObject cameraPathObj = new GameObject("Camera_Path");
-            _cameraPath = cameraPathObj.AddComponent<CinemachinePath>();
-        }
-        
-        _cameraPath.m_Waypoints.Initialize();
-        _cameraPath.m_Waypoints = new CinemachinePath.Waypoint[GetCameraTrack().spline.Spline.Count];
-        for (int i = 0; i < _cameraPath.m_Waypoints.Length; i++)
-        {
-            _cameraPath.m_Waypoints[i].position = GetCameraTrack().spline.Spline[i].Position;
-            _cameraPath.m_Waypoints[i].tangent = GetCameraTrack().spline.Spline[i].TangentOut;
-            _cameraPath.m_Waypoints[i].roll = 0.0f;
         }
     }
 

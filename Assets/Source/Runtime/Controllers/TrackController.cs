@@ -109,13 +109,6 @@ public class TrackController : MonoBehaviour
 #if UNITY_EDITOR
         MoveFinishPlatformToEnd();
 #endif
-
-        RefreshCameraGroupTarget();
-        Events.OnPlayerBlockAdded.RemoveListener(data => RefreshCameraGroupTarget());
-        Events.OnPlayerBlockAdded.AddListener(data => RefreshCameraGroupTarget());
-            
-        Events.OnPlayerBlockRemoved.RemoveListener(data => RefreshCameraGroupTarget());
-        Events.OnPlayerBlockRemoved.AddListener(data => RefreshCameraGroupTarget());
     }
 
     public void AddStartPlatform(Platform newPlatform)
@@ -360,31 +353,6 @@ public class TrackController : MonoBehaviour
 #endif
     }
 
-    private void RefreshCameraGroupTarget()
-    {
-        if (GameManager.Instance != null
-            && GameManager.Instance.playerController != null
-            && GameManager.Instance.playerController.surfBlockParent != null)
-        {
-            Transform parent = GameManager.Instance.playerController.surfBlockParent;
-            if (parent != null)
-            {
-                int count = parent.childCount;
-                _pathTargetCineGrp.m_Targets =
-                    new CinemachineTargetGroup.Target[count];
-                for (int i = 0; i < count; i++)
-                {
-                    _pathTargetCineGrp.m_Targets[i] = new CinemachineTargetGroup.Target()
-                    {
-                        target = parent.GetChild(i).transform,
-                        radius = 0.2f,
-                        weight = 0.1f
-                    };
-                }
-            }
-        }
-    }
-    
     private Transform _platformContainer;
     public Transform GetPlatformContainer()
     {
