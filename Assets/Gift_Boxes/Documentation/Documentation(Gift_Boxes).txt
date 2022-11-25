@@ -1,0 +1,47 @@
+	
+--------------Gift_Boxes----------------------------
+
+This pack contains 3d Model and Animations of Gift Boxes.
+
+Technical Details:-
+		
+		- Models included : Gift box, Cake low poly
+		- Texture variations : 10+(for gift boxes), 1 for Cake				
+		- Vertex count : 620(Gift Box), 1282(Cake)
+		- Tris count : 1180(Gift Box), 2468(Cake)
+		- Unwrapped : Yes
+		- Used Material(s) : Universal Render Pipeline(URP/Lit)
+		- Texture maps : Albedo/Base Color, Normal(For Cake only)
+		- Texture Size : 2048
+		- Animations : 5(Idle, Open box, Close box, Top away, Click)
+
+Features:-
+	- Mobile/AR Ready asset
+	- Realistic textures
+	- Smooth Animations
+	- Easy to change color of the Materials
+	- Demo scene, Guides included
+		
+Folder details:-
+
+	Materials : Where the materials for the model located.
+	
+	FBX : Contain FBX format of the 3d model.
+	
+	Textures : Contains Textures, that are in (.PNG) file format
+	
+	(Other folders - Prefabs, Scenes)
+
+How to use:-
+	
+	Simply drag and drop the prefab to your scene and use it.
+	(Prefab(s) located under 
+	Asset > Gift_Boxes > Prefabs).
+
+..................................................................................
+
+About Us : "SR Studios Kerala", Game developing company located in Alappuzha, Kerala, India
+
+Contact : srstudioskerala@gmail.com
+
+................Thanks for downloading this package................................
