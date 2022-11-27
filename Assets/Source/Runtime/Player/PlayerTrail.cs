@@ -15,6 +15,6 @@ public class PlayerTrail : MonoBehaviour
 
     private void Update()
     {
-        trail.emitting = GameManager.Instance.playerController.IsGrounded();
+        trail.emitting = GameSystem.GetPlayer().IsGrounded();
     }
 }

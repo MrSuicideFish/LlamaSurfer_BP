@@ -6,20 +6,17 @@ using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
-    public PlayerController playerController;
     public int points;
 
     public bool gameHasStarted { get; private set; }
     public bool gameHasEnded { get; private set; }
     public bool playerHasFailed { get; private set; }
 
-    public void Awake()
+    public void Start()
     {
-        Instance = this;
-        TrackController.Instance.OnTrackEnd.RemoveListener(OnTrackEnded);
-        TrackController.Instance.OnTrackEnd.AddListener(OnTrackEnded);
-        TrackController.Instance.Restart();
+        GameSystem.GetTrackController().OnTrackEnd.RemoveListener(OnTrackEnded);
+        GameSystem.GetTrackController().OnTrackEnd.AddListener(OnTrackEnded);
+        GameSystem.GetTrackController().Restart();
 
         GameUIManager.Instance.RebuildUI();
         GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.PreGame);
@@ -32,8 +29,8 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        TrackController.Instance.SetTrackTime(0.0f);
-        TrackController.Instance.Play();
+        GameSystem.GetTrackController().SetTrackTime(0.0f);
+        GameSystem.GetTrackController().Play();
         gameHasStarted = true;
         GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Game);
     }
@@ -41,7 +38,7 @@ public class GameManager : MonoBehaviour
     public void EndGame(bool isWin)
     {
         gameHasEnded = true;
-        TrackController.Instance.Pause();
+        GameSystem.GetTrackController().Pause();
         if (isWin)
         {
             playerHasFailed = false;
@@ -50,7 +47,6 @@ public class GameManager : MonoBehaviour
         else
         {
             playerHasFailed = true;
-            
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameFail);
         }
     }
@@ -75,21 +71,21 @@ public class GameManager : MonoBehaviour
 
     public void GivePlayerBlock()
     {
-        SurfBlockView newViewRes = playerController.surfBlockParent.GetChild(0).GetComponent<SurfBlockView>();
+        SurfBlockView newViewRes = GameSystem.GetPlayer().surfBlockParent.GetChild(0).GetComponent<SurfBlockView>();
         if (newViewRes != null)
         {
-            SurfBlockView newView = GameObject.Instantiate(newViewRes, playerController.surfBlockParent);
-            newView.transform.localPosition = new Vector3(0, playerController.BlockCount()-1, 0);
+            SurfBlockView newView = GameObject.Instantiate(newViewRes, GameSystem.GetPlayer().surfBlockParent);
+            newView.transform.localPosition = new Vector3(0, GameSystem.GetPlayer().BlockCount()-1, 0);
             newView.transform.localEulerAngles = Vector3.zero;
             newView.transform.SetAsLastSibling();
 
-            Events.OnPlayerBlockAdded.Invoke(playerController.surfBlockParent.childCount);
+            Events.OnPlayerBlockAdded.Invoke(GameSystem.GetPlayer().surfBlockParent.childCount);
         }
     }
 
     public void RemovePlayerBlock(SurfBlockView view)
     {
-        SurfBlockView[] blocks = playerController.surfBlockParent.gameObject.GetComponentsInChildren<SurfBlockView>();
+        SurfBlockView[] blocks = GameSystem.GetPlayer().surfBlockParent.gameObject.GetComponentsInChildren<SurfBlockView>();
 
         SurfBlockView targetBlock = null;
         for (int i = 0; i < blocks.Length; i++)
@@ -103,12 +99,12 @@ public class GameManager : MonoBehaviour
         if (targetBlock != null)
         {
             targetBlock.Detatch();
-            if (playerController.surfBlockParent.childCount == 0)
+            if (GameSystem.GetPlayer().surfBlockParent.childCount == 0)
             {
                 EndGame(false);
             }
             
-            Events.OnPlayerBlockRemoved.Invoke(playerController.surfBlockParent.childCount);
+            Events.OnPlayerBlockRemoved.Invoke(GameSystem.GetPlayer().surfBlockParent.childCount);
         }
     }
 }

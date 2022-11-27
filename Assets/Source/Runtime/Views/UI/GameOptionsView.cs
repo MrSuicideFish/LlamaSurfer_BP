@@ -33,10 +33,10 @@ public class GameOptionsView : GameScreenView
 
     public void Done()
     {
-        if (GameManager.Instance.gameHasStarted
-            && GameManager.Instance.gameHasEnded)
+        if (GameSystem.GetGameManager().gameHasStarted
+            && GameSystem.GetGameManager().gameHasEnded)
         {
-            if (GameManager.Instance.playerHasFailed)
+            if (GameSystem.GetGameManager().playerHasFailed)
             {
                 GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameFail);
             }
@@ -44,7 +44,7 @@ public class GameOptionsView : GameScreenView
             {
                 GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSuccess);
             }
-        }else if (!GameManager.Instance.gameHasStarted)
+        }else if (!GameSystem.GetGameManager().gameHasStarted)
         {
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.PreGame);
         }

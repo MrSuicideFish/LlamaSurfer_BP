@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Cinemachine;
-using DG.Tweening;
+﻿using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -12,59 +8,52 @@ using UnityEngine.Splines;
 [ExecuteAlways]
 public class TrackController : MonoBehaviour
 {
-    public static TrackController Instance;
-    
-    public SplineContainer spline;
-    public Grid _grid { get; private set; }
-    
     private const float MIN_TRACK_POSITION = 0.0001f;
     private const float MAX_TRACK_POSITION = 0.9999f;
-    public float trackSpeed = 1.0f;
-
-    public UnityEvent OnTrackEnd;
-
-    public int TrackCount => _platforms.Count;
     
-    // track playback
-    private bool _isPlaying;
-    private float _trackTime;
-    public float TrackTime
-    {
-        get => _trackTime;
-        set => _trackTime = Mathf.Clamp(value, MIN_TRACK_POSITION, MAX_TRACK_POSITION);
-    }
-    public bool IsPlaying => _isPlaying;
-    public bool HasEnded => TrackTime >= 1.0f;
-
-    public float StartTime { get; private set; }
-    
-    // path targeting
-    private GameObject _pathPositionTarget;
-    private CinemachineTargetGroup _pathTargetCineGrp;
-    public float pathTargetLead;
+    public SplineContainer spline;
+    public Grid _grid;
     
     // platforms
     public List<Platform> _platforms;
     public Platform _startPlatform;
     public Platform _finishPlatform;
+    
+    public UnityEvent OnTrackStart;
+    public UnityEvent OnTrackEnd;
+    
+    // cache
+    private Vector3 _trackPosition;
+    private Vector3 _trackTangent;
+    private Vector3 _trackWorldUp;
 
-    public void OnValidate()
+    // playback
+    private float _trackTime;
+    public float TrackTime
     {
-        for (int i = 0; i < _platforms.Count; i++)
+        get => _trackTime;
+        set
         {
-            if (_platforms[i] == null)
+            _trackTime = Mathf.Clamp(value, MIN_TRACK_POSITION, MAX_TRACK_POSITION);
+            _trackPosition = spline.EvaluatePosition(_trackTime);
+            if (float.IsNaN(_trackPosition.x) || float.IsNaN(_trackPosition.y) || float.IsNaN(_trackPosition.z))
             {
-                _platforms.RemoveAt(i);
+                _trackPosition = Vector3.zero;
             }
+        
+            _trackTangent = ((Vector3) spline.EvaluateTangent(_trackTime)).normalized;
+            _trackWorldUp = spline.EvaluateUpVector(_trackTime);
         }
-
-        MoveFinishPlatformToEnd();
     }
+    
+    private bool _isPlaying;
+    public bool IsPlaying => _isPlaying;
+    public bool HasEnded => TrackTime >= 1.0f && !_isPlaying;
+    public float StartTime { get; private set; }
+    public float EndTime { get; private set; }
 
     public void OnEnable()
     {
-        Instance = this;
-        _grid = this.GetComponent<Grid>();
         if (_grid == null)
         {
             _grid = this.AddComponent<Grid>();
@@ -80,37 +69,161 @@ public class TrackController : MonoBehaviour
             spline.Spline.Add(new BezierKnot(
                 float3.zero, float3.zero, float3.zero, Quaternion.identity));
         }
-        
-        if (_pathPositionTarget == null)
-        {
-            _pathPositionTarget = GameObject
-                .FindGameObjectWithTag("PathTarget");
-            if (_pathPositionTarget == null)
-            {
-                _pathPositionTarget = new GameObject("_PATH_TARGET");
-                _pathPositionTarget.gameObject.tag = "PathTarget";
-            }
-        }
 
-        _pathTargetCineGrp = _pathPositionTarget
-            .GetComponent<CinemachineTargetGroup>();
-        if (!_pathTargetCineGrp)
-        {
-            _pathTargetCineGrp = _pathPositionTarget
-                .AddComponent<CinemachineTargetGroup>();
-        }
-
-        if (_platforms == null || _platforms.Count > 0)
+#if UNITY_EDITOR
+        if (_platforms == null || _platforms.Count == 0)
         {
             _platforms = new List<Platform>(
                 GetPlatformContainer().GetComponentsInChildren<Platform>());
         }
         
-#if UNITY_EDITOR
         MoveFinishPlatformToEnd();
 #endif
     }
 
+    private Vector3 _pathTargetMoveVel;
+    private void Update()
+    {
+        if (_isPlaying)
+        {
+            Step();
+        }
+    }
+
+    public void Play()
+    {
+        _isPlaying = true;
+        StartTime = Time.time;
+        if (OnTrackStart != null)
+        {
+            OnTrackStart.Invoke();
+        }
+    }
+
+    public void Pause()
+    {
+        _isPlaying = false;
+    }
+
+    public void End()
+    {
+        TrackTime = MAX_TRACK_POSITION;
+        Pause();
+        EndTime = Time.time;
+        if (OnTrackEnd != null)
+        {
+            OnTrackEnd.Invoke();
+        }
+    }
+
+    public void Restart()
+    {
+        Pause();
+        SetTrackTime(0.0f);
+    }
+
+    public void Step(float amount)
+    {
+        SetTrackTime(TrackTime + amount);
+    }
+
+    private void Step()
+    {
+        TrackTime += (1.0f / spline.Spline.GetLength()) * GameProperties.Get().trackPlaybackSpeed * Time.deltaTime;
+        if (TrackTime >= MAX_TRACK_POSITION)
+        {
+            End();
+        }
+    }
+
+    public void SetTrackTime(float time, bool fireTrackEvents = true)
+    {
+        TrackTime = time;
+
+        // track end
+        if (TrackTime >= MAX_TRACK_POSITION)
+        {
+            TrackTime = MAX_TRACK_POSITION;
+            Pause();
+            
+            if (fireTrackEvents)
+            {
+                OnTrackEnd?.Invoke();
+            }
+        }
+    }
+
+    public Vector3 GetTrackPositionAt(float time)
+    {
+        Vector3 result = spline.EvaluatePosition(time);
+        if (float.IsNaN(result.x) || float.IsNaN(result.y) || float.IsNaN(result.z))
+        {
+            result = Vector3.zero;
+        }
+
+        return result;
+    }
+    
+    public Vector3 GetTrackPosition()
+    {
+        return _trackPosition;
+    }
+
+    public Vector3 GetTrackTangent()
+    {
+        return _trackTangent;
+    }
+
+    public Vector3 GetTrackWorldUp()
+    {
+        return _trackWorldUp;
+    }
+
+    
+    
+#if UNITY_EDITOR
+    public int TrackCount
+    {
+        get
+        {
+            return GetPlatformContainer().childCount;
+        }
+    }
+    
+    public void OnValidate()
+    {
+        /*
+        for (int i = 0; i < _platforms.Count; i++)
+        {
+            if (_platforms[i] == null)
+            {
+                _platforms.RemoveAt(i);
+            }
+        }*/
+
+        MoveFinishPlatformToEnd();
+    }
+    
+    private Transform _platformContainer;
+    public Transform GetPlatformContainer()
+    {
+        if (_platformContainer == null)
+        {
+            GameObject existing = GameObject.FindGameObjectWithTag("PlatformContainer");
+            if (existing != null)
+            {
+                _platformContainer = existing.transform;
+            }
+            else
+            {
+                _platformContainer = new GameObject("_PLATFORMS").transform;
+                _platformContainer.gameObject.tag = "PlatformContainer";
+            }
+        }
+
+        return _platformContainer;
+    }
+    
     public void AddStartPlatform(Platform newPlatform)
     {
         if (_startPlatform != null)
@@ -195,6 +308,7 @@ public class TrackController : MonoBehaviour
 
         if (_platforms.Count <= 2)
         {
+            MoveFinishPlatformToEnd();
             return;
         }
 
@@ -236,140 +350,14 @@ public class TrackController : MonoBehaviour
         spline.Spline.Clear();
     }
     
-    private Vector3 _pathTargetMoveVel;
-    private void Update()
-    {
-        if (_isPlaying)
-        {
-            Step();
-        }
-    }
-
-    public void Play()
-    {
-        _isPlaying = true;
-        StartTime = Time.time;
-    }
-
-    public void Pause()
-    {
-        _isPlaying = false;
-    }
-
-    public void Restart()
-    {
-        Pause();
-        SetTrackTime(0.0f);
-    }
-
-    public void Step(float amount)
-    {
-        SetTrackTime(TrackTime + amount);
-    }
-
-    private void Step()
-    {
-        TrackTime += (1.0f / spline.Spline.GetLength()) * trackSpeed * Time.deltaTime;
-        GetPathTarget().position = GetTrackPositionAt(TrackTime + pathTargetLead);
-        
-        // track end
-        if (TrackTime >= MAX_TRACK_POSITION)
-        {
-            TrackTime = MAX_TRACK_POSITION;
-            Pause();
-            
-            if (OnTrackEnd != null)
-            {
-                OnTrackEnd.Invoke();
-            }
-        }
-    }
-
-    public void SetTrackTime(float time, bool fireTrackEvents = true)
-    {
-        TrackTime = time;
-
-        // track end
-        if (TrackTime >= MAX_TRACK_POSITION)
-        {
-            TrackTime = MAX_TRACK_POSITION;
-            Pause();
-            
-            if (fireTrackEvents)
-            {
-                OnTrackEnd?.Invoke();
-            }
-        }
-        
-        Vector3 pos = spline.EvaluatePosition(TrackTime + pathTargetLead);
-        if (float.IsNaN(pos.x) || float.IsNaN(pos.y) || float.IsNaN(pos.z))
-        {
-            pos = Vector3.zero;
-        }
-
-        GetPathTarget().position = pos;
-    }
-
-    private Transform GetPathTarget()
-    {
-        return _pathPositionTarget.transform;
-    }
-
-    public Vector3 GetTrackPosition()
-    {
-        return GetTrackPositionAt(TrackTime);
-    }
-
-    public Vector3 GetTrackPositionAt(float time)
-    {
-        Vector3 result = spline.EvaluatePosition(time);
-        if (float.IsNaN(result.x) || float.IsNaN(result.y) || float.IsNaN(result.z))
-        {
-            result = Vector3.zero;
-        }
-
-        return result;
-    }
-
-    public Vector3 GetTrackTangent()
-    {
-        return ((Vector3) spline.EvaluateTangent(TrackTime)).normalized;
-    }
-
-    public Vector3 GetTrackWorldUp()
-    {
-        return spline.EvaluateUpVector(TrackTime);
-    }
-
     private void OnDrawGizmos()
     {
-#if UNITY_EDITOR
         // Ensure continuous Update calls.
         if (!Application.isPlaying)
         {
             UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
             UnityEditor.SceneView.RepaintAll();
         }
+    }
 #endif
-    }
-
-    private Transform _platformContainer;
-    public Transform GetPlatformContainer()
-    {
-        if (_platformContainer == null)
-        {
-            GameObject existing = GameObject.FindGameObjectWithTag("PlatformContainer");
-            if (existing != null)
-            {
-                _platformContainer = existing.transform;
-            }
-            else
-            {
-                _platformContainer = new GameObject("_PLATFORMS").transform;
-                _platformContainer.gameObject.tag = "PlatformContainer";
-            }
-        }
-
-        return _platformContainer;
-    }
 }

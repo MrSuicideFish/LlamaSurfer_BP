@@ -20,7 +20,7 @@ public class LevelCompleteView : GameScreenView
     {
         // do points counting
         currentPoints = 0;
-        int targetPoints = GameManager.Instance.points;
+        int targetPoints = GameSystem.GetGameManager().points;
         if (LevelCfgDb.GetCurrentLevel() != null)
         {
             maxPoints = LevelCfgDb.GetCurrentLevel().maxPoints;
@@ -100,7 +100,7 @@ public class LevelCompleteView : GameScreenView
         lvlCompleteSeq.Append(contentWindow.DOAnchorPos(Vector2.zero, 1.4f, false).SetEase(Ease.OutBounce));
         lvlCompleteSeq.Append(DoCountPoints());
 
-        float completePerc = (float)GameManager.Instance.points / (float) maxPoints;
+        float completePerc = (float)GameSystem.GetGameManager().points / (float) maxPoints;
         int starCount = Mathf.RoundToInt(Mathf.Lerp(1, 5, completePerc));
         lvlCompleteSeq.Append(DoPresentStars(starCount));
         lvlCompleteSeq.Play();

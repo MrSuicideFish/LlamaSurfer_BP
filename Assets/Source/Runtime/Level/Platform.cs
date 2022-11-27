@@ -14,6 +14,7 @@ public class Platform : MonoBehaviour
     public bool isStartPlatform;
     public bool isFinishPlatform;
 
+    /*
     #if UNITY_EDITOR
     public void OnDrawGizmos()
     {
@@ -41,4 +42,5 @@ public class Platform : MonoBehaviour
         }
     }
     #endif
+    */
 }

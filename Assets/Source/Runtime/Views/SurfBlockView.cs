@@ -4,7 +4,7 @@ using UnityEngine;
 public class SurfBlockView : MonoBehaviour
 {
     public Rigidbody rigidBody;
-    public Collider collider;
+    public new Collider collider;
     public SpringJoint joint;
 
     public MeshRenderer topRenderer;

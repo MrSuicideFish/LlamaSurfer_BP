@@ -21,10 +21,10 @@ public class LevelSelectScreenView : GameScreenView
 
     public void Back()
     {
-        if (GameManager.Instance.gameHasStarted 
-            && GameManager.Instance.gameHasEnded)
+        if (GameSystem.GetGameManager().gameHasStarted 
+            && GameSystem.GetGameManager().gameHasEnded)
         {
-            if (GameManager.Instance.playerHasFailed)
+            if (GameSystem.GetGameManager().playerHasFailed)
             {
                 GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameFail);
             }

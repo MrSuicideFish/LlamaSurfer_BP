@@ -1,19 +1,14 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cinemachine;
-using NUnit.Framework;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEditor.SceneManagement;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Splines;
-using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 [EditorTool("Level Editor", typeof(TrackController))]
@@ -30,9 +25,6 @@ public class LevelEditor : EditorTool
         Platform,
         Entity
     }
-
-    // Gameplay Systems
-    private TrackController _track;
 
     // Entity Repositories
     private Platform[] _platformRepo;
@@ -54,30 +46,41 @@ public class LevelEditor : EditorTool
 
     public float trackPosition
     {
-        get { return GetCameraTrack().TrackTime; }
+        get { return GameSystem.GetTrackController().TrackTime; }
 
-        set { GetCameraTrack().TrackTime = value; }
+        set { GameSystem.GetTrackController().TrackTime = value; }
+    }
+
+    [MenuItem("Broken Pixel/Open Level Editor")]
+    private static void OpenLevelEditor()
+    {
+        TrackController trackInst = TrackController.FindObjectOfType<TrackController>();
+        if (trackInst == null)
+        {
+            Selection.SetActiveObjectWithContext(
+                GameSystem.GetTrackController(), GameSystem.GetTrackController());
+        }
     }
 
     public void OnEnable()
     {
-        if (GetCameraTrack().TrackCount == 0)
-        {
-            BuildStart();
-            BuildFinish();
-        }
 
-        Rebuild();
-        ReloadObjectRepo();
-        ReloadPlatformRepo();
     }
 
     public override void OnActivated()
     {
-        SceneView.lastActiveSceneView?.ShowNotification(new GUIContent("Entering Level Editor"), .1f);
+        if (Application.isPlaying) return;
+        if (GameSystem.GetTrackController().TrackCount == 0)
+        {
+            BuildStart();
+            BuildFinish();
+        }
+        
         ReloadObjectRepo();
         ReloadPlatformRepo();
         ReloadGraphicIcons();
+        Rebuild();
+        SceneView.lastActiveSceneView?.ShowNotification(new GUIContent("Entering Level Editor"), .1f);
     }
 
     private void ReloadGraphicIcons()
@@ -126,38 +129,57 @@ public class LevelEditor : EditorTool
             Debug.Log("No track selected!");
     }
 
+    private float playerXPosition;
+    private void DrawTrackPositionSlider()
+    {
+        const float slider_space = 15;
+        GUILayout.Label($"TrackPosition ({trackPosition})");
+        
+        GUILayout.Space(slider_space);
+        
+        float newTrackTime = GUILayout.HorizontalSlider(GameSystem.GetTrackController().TrackTime, 0.0f, 1.0f);
+        if (!GameSystem.GetTrackController().TrackTime.Equals(newTrackTime))
+        {
+            GameSystem.GetTrackController().SetTrackTime(newTrackTime, fireTrackEvents: false);
+        }
+
+        GUILayout.Space(slider_space);
+        
+        float newMoveX = GUILayout.HorizontalSlider(playerXPosition, 0.0f, 1.0f);
+        if (!playerXPosition.Equals(newMoveX))
+        {
+            playerXPosition = newMoveX;
+            GameSystem.GetPlayer().moveX = playerXPosition;
+        }
+        
+        GUILayout.Space(slider_space);
+        using (new GUILayout.HorizontalScope())
+        {
+            if (GUILayout.Button("<<")) GameSystem.GetTrackController().Step(-(1.0f / GameSystem.GetTrackController().spline.Spline.GetLength()));
+            if (GUILayout.Button(">>")) GameSystem.GetTrackController().Step((1.0f / GameSystem.GetTrackController().spline.Spline.GetLength()));
+        }
+    }
+
     private void DrawTrackWindow()
     {
-        using (new GUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.MaxWidth(200)))
+        using (new GUILayout.VerticalScope(GUILayout.MaxWidth(200)))
         {
-            GUILayout.Space(10);
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine(string.Format("TT Pos: {0}", _track.GetTrackPosition()));
-            sb.AppendLine(string.Format("TT Tan: {0}", _track.GetTrackTangent()));
-            sb.AppendLine(string.Format("TT World Up: {0}", _track.GetTrackWorldUp()));
+            sb.AppendLine(string.Format("TT Pos: {0}", GameSystem.GetTrackController().GetTrackPosition()));
+            sb.AppendLine(string.Format("TT Tan: {0}", GameSystem.GetTrackController().GetTrackTangent()));
+            sb.AppendLine(string.Format("TT World Up: {0}", GameSystem.GetTrackController().GetTrackWorldUp()));
 
             GUILayout.Label(sb.ToString());
 
             EditorGUI.BeginChangeCheck();
 
-            if (GetCameraTrack().TrackCount > 2)
+            if (GameSystem.GetTrackController().TrackCount > 2)
             {
                 if (GUILayout.Button("Delete")) RemoveLast();
             }
-
-            GUILayout.Label($"TrackPosition ({trackPosition})");
-            float newTrackTime = GUILayout.HorizontalSlider(GetCameraTrack().TrackTime, 0.0f, 1.0f);
-            if (!GetCameraTrack().TrackTime.Equals(newTrackTime))
-            {
-                GetCameraTrack().SetTrackTime(newTrackTime, fireTrackEvents: false);
-            }
-            GUILayout.Space(10);
-            using (new GUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button("<<")) GetCameraTrack().Step(-(1.0f / GetCameraTrack().spline.Spline.GetLength()));
-                if (GUILayout.Button(">>")) GetCameraTrack().Step((1.0f / GetCameraTrack().spline.Spline.GetLength()));
-            }
+            
+            DrawTrackPositionSlider();
 
             if (GUILayout.Button("Rebuild"))
             {
@@ -166,11 +188,9 @@ public class LevelEditor : EditorTool
 
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(GetCameraTrack().GetPlatformContainer(), "change platforms");
-                Undo.RecordObject(GetCameraTrack(), "change track");
+                Undo.RecordObject(GameSystem.GetTrackController().GetPlatformContainer(), "change platforms");
+                Undo.RecordObject(GameSystem.GetTrackController(), "change track");
             }
-
-            GUILayout.Space(10);
         }
     }
 
@@ -199,7 +219,11 @@ public class LevelEditor : EditorTool
                     DrawPlatformsPanel();
                     break;
             }
+            
+            GUILayout.FlexibleSpace();
         }
+        
+        GUILayout.FlexibleSpace();
     }
 
     private void DrawEntitiesPanel()
@@ -221,6 +245,7 @@ public class LevelEditor : EditorTool
         {
             _objectToPaint = GUILayout.SelectionGrid(_objectToPaint, _objectThumbnails, 10);
         }
+        GUILayout.FlexibleSpace();
     }
     
     private void DrawPlatformsPanel()
@@ -234,7 +259,6 @@ public class LevelEditor : EditorTool
                     BuildNext(i);
                 }
             }
-            GUILayout.FlexibleSpace();
         }
     }
 
@@ -242,9 +266,9 @@ public class LevelEditor : EditorTool
     {
         const float gizmoThickness = 6.0f;
         
-        Vector3 trackWorldPos = _track.GetTrackPosition();
-        Vector3 trackTangent = _track.GetTrackTangent();
-        Vector3 worldUp = _track.GetTrackWorldUp();
+        Vector3 trackWorldPos = GameSystem.GetTrackController().GetTrackPosition();
+        Vector3 trackTangent = GameSystem.GetTrackController().GetTrackTangent();
+        Vector3 worldUp = GameSystem.GetTrackController().GetTrackWorldUp();
 
         Color oldColor = Handles.color;
 
@@ -272,47 +296,32 @@ public class LevelEditor : EditorTool
             HandleUtility.AddDefaultControl(GUIUtility.GetControlID(GetHashCode(), FocusType.Passive));
         }
 
-        if (GetCameraTrack() != null)
+        if (GameSystem.GetTrackController() != null)
         {
             sceneView.sceneViewState.alwaysRefresh = true;
             
             // move scene camera to the updated game camera's orientation
             // game camera executes in edit mode and uses in-game properties for pos/rot offset from the path.
             // instead of emulating this we take the game camera's orientation. NOTE: FOV/Effects will differ.
-            TeleportSceneCamera(Camera.main.transform.position, Camera.main.transform.forward);
+            TeleportSceneCamera(Camera.main.transform.position,
+                GameSystem.GetPlayer().transform.position - Camera.main.transform.position);
             
             HandleMouseControl(sceneView);
             Handles.BeginGUI();
             
             using (new GUILayout.VerticalScope())
             {
-                GUILayout.FlexibleSpace();
-
-                GUILayout.Space(10);
                 using (new GUILayout.HorizontalScope())
                 {
-                    GUILayout.Space(10);
+                    GUILayout.Space(15);
                     DrawTrackWindow();
+                    GUILayout.Space(15);
                     DrawObjectWindow();
                 }
             }
 
             Handles.EndGUI();
         }
-    }
-
-    private TrackController GetCameraTrack()
-    {
-        if (_track == null)
-        {
-            _track = Object.FindObjectOfType<TrackController>();
-            if (_track == null)
-            {
-                CreateNewTrack();
-            }
-        }
-
-        return _track;
     }
 
     private WorldObjectLayer GetObjectLayer()
@@ -334,14 +343,6 @@ public class LevelEditor : EditorTool
         return _objectContainer;
     }
 
-    private void CreateNewTrack()
-    {
-        GameObject splineObj = new GameObject("_LEVEL_TRACK");
-        splineObj.tag = "TrackController";
-        _track = splineObj.AddComponent<TrackController>();
-        _track.spline.Spline.Add(new BezierKnot(new float3(0, 0, 0)));
-    }
-
     public void BuildStart()
     {
         const string startPlatformPath = "Level/Platforms/Platform_Start";
@@ -349,7 +350,7 @@ public class LevelEditor : EditorTool
         if (platformRes != null)
         {
             Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-            GetCameraTrack().AddStartPlatform(p);
+            GameSystem.GetTrackController().AddStartPlatform(p);
             Rebuild();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
@@ -362,7 +363,7 @@ public class LevelEditor : EditorTool
         if (platformRes != null)
         {
             Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-            GetCameraTrack().AddFinishPlatform(p);
+            GameSystem.GetTrackController().AddFinishPlatform(p);
             Rebuild();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
@@ -373,7 +374,7 @@ public class LevelEditor : EditorTool
         Platform newPlatform = PrefabUtility.InstantiatePrefab(_platformRepo[platformIndex]) as Platform;
         if (newPlatform != null)
         {
-            GetCameraTrack().AddPlatform(newPlatform);
+            GameSystem.GetTrackController().AddPlatform(newPlatform);
             Rebuild();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
@@ -381,7 +382,7 @@ public class LevelEditor : EditorTool
 
     public void RemoveLast()
     {
-        GetCameraTrack().RemoveLast();
+        GameSystem.GetTrackController().RemoveLast();
         Rebuild();
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
     }
@@ -393,11 +394,11 @@ public class LevelEditor : EditorTool
 
     private void RebuildPlayerPath()
     {
-        GetCameraTrack().ClearTrackNodes();
+        GameSystem.GetTrackController().ClearTrackNodes();
         
-        for (int i = 0; i < GetCameraTrack()._platforms.Count; i++)
+        for (int i = 0; i < GameSystem.GetTrackController()._platforms.Count; i++)
         {
-            Platform platform = GetCameraTrack()._platforms[i];
+            Platform platform = GameSystem.GetTrackController()._platforms[i];
             
             if (platform != null)
             {
@@ -421,7 +422,7 @@ public class LevelEditor : EditorTool
 
                     TrackNodeInfo newTrackNode = new TrackNodeInfo(
                         currentPos, currentRotation, float3.zero, float3.zero);
-                    GetCameraTrack().AddTrackNode(newTrackNode);
+                    GameSystem.GetTrackController().AddTrackNode(newTrackNode);
                 }   
             }
         }
@@ -484,7 +485,7 @@ public class LevelEditor : EditorTool
 
     private Vector3 SampleMousePosition()
     {
-        if (GetCameraTrack() == null || GetCameraTrack()._grid == null)
+        if (GameSystem.GetTrackController() == null || GameSystem.GetTrackController()._grid == null)
             return Vector3.zero;
         
         Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
@@ -494,7 +495,7 @@ public class LevelEditor : EditorTool
         Vector3Int samplePosInt =
             new Vector3Int(Mathf.FloorToInt(point.x), Mathf.FloorToInt(point.y), Mathf.FloorToInt(point.z));
 
-        return GetCameraTrack()._grid.GetCellCenterWorld(samplePosInt);
+        return GameSystem.GetTrackController()._grid.GetCellCenterWorld(samplePosInt);
     }
 
     private void AddWorldObject(int objIndex, Vector3 position, Vector3 rotation)

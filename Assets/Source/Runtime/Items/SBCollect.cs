@@ -8,7 +8,7 @@ public class SBCollect : WorldObjectBase
     {
         if (other.CompareTag("Player"))
         {
-            GameManager.Instance.GivePlayerBlock();
+            GameSystem.GetGameManager().GivePlayerBlock();
             this.gameObject.SetActive(false);
         }
     }

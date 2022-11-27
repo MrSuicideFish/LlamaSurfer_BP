@@ -21,7 +21,7 @@ public class PreGameScreenView : GameScreenView
         {
             if (Input.GetTouch(0).phase == TouchPhase.Moved)
             {
-                GameManager.Instance.StartGame();
+                GameSystem.GetGameManager().StartGame();
             }
         }
     }

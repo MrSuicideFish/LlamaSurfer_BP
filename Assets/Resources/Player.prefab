@@ -221,7 +221,6 @@ GameObject:
   m_Component:
   - component: {fileID: 477263608537451831}
   - component: {fileID: 477263608537451816}
-  - component: {fileID: 1711823058}
   - component: {fileID: 1711823059}
   - component: {fileID: 7510242121503632103}
   m_Layer: 6
@@ -248,7 +247,7 @@ Transform:
   - {fileID: 573334525}
   - {fileID: 1488586279656746218}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &477263608537451816
 MonoBehaviour:
@@ -262,24 +261,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5db0296e524844f3b7962a7a380ae90d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!143 &1711823058
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 477263608537451819}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Height: 0.77
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 1
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1711823059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,11 +273,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 790be8e7b2ffa95419a5dc59d628a844, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  charController: {fileID: 1711823058}
+  charController: {fileID: 0}
   surfBlockParent: {fileID: 573334525}
-  moveSpeed: 15
   moveWidth: 2.5
-  moveSmoothTime: 1
+  rotateSpeed: 5
 --- !u!114 &7510242121503632103
 MonoBehaviour:
   m_ObjectHideFlags: 0

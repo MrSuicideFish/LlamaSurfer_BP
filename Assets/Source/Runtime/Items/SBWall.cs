@@ -12,8 +12,8 @@ public class SBWall : WorldObjectBase
     public void OnCollisionEnter(Collision collision)
     {
         var other = collision.gameObject;
-        if (GameManager.Instance.gameHasStarted 
-            && !GameManager.Instance.gameHasEnded
+        if (GameSystem.GetGameManager().gameHasStarted 
+            && !GameSystem.GetGameManager().gameHasEnded
             && other.CompareTag("Player")
             && !wasHit)
         {
@@ -24,7 +24,7 @@ public class SBWall : WorldObjectBase
             if (other.transform.position.y <= transform.position.y + 0.3f)
             {
                 SurfBlockView sb = other.GetComponent<SurfBlockView>();
-                GameManager.Instance.RemovePlayerBlock(sb);
+                GameSystem.GetGameManager().RemovePlayerBlock(sb);
             }
         }
     }

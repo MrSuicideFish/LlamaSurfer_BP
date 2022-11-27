@@ -46,9 +46,6 @@ public class GameplayView : GameScreenView
 
     public void Update()
     {
-        if (TrackController.Instance != null)
-        {
-            progressBar.fillAmount = TrackController.Instance.TrackTime;   
-        }
+        progressBar.fillAmount = GameSystem.GetTrackController().TrackTime;   
     }
 }

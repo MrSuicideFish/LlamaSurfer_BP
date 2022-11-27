@@ -9,7 +9,7 @@ public class PointsOnTouch : WorldObjectBase
     {
         if (other.CompareTag("Player"))
         {
-            GameManager.Instance.AddPoints(value);
+            GameSystem.GetGameManager().AddPoints(value);
             this.gameObject.SetActive(false);
         }
     }
