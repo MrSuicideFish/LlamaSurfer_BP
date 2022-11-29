@@ -8,8 +8,8 @@ using UnityEngine.Splines;
 [ExecuteAlways]
 public class TrackController : MonoBehaviour
 {
-    private const float MIN_TRACK_POSITION = 0.0001f;
-    private const float MAX_TRACK_POSITION = 0.9999f;
+    public const float MIN_TRACK_POSITION = 0.0001f;
+    public const float MAX_TRACK_POSITION = 0.9999f;
     
     public SplineContainer spline;
     public Grid _grid;
@@ -23,9 +23,9 @@ public class TrackController : MonoBehaviour
     public UnityEvent OnTrackEnd;
     
     // cache
-    private Vector3 _trackPosition;
-    private Vector3 _trackTangent;
-    private Vector3 _trackWorldUp;
+    private Vector3 _trackPosition = Vector3.zero;
+    private Vector3 _trackTangent = Vector3.zero;
+    private Vector3 _trackWorldUp = Vector3.zero;
 
     // playback
     private float _trackTime;

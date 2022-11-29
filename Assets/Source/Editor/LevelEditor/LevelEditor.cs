@@ -5,10 +5,12 @@ using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.EditorTools;
+using UnityEditor.Overlays;
 using UnityEditor.SceneManagement;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 public enum EPaintMode
@@ -59,17 +61,55 @@ public class LevelEditor : EditorTool
         Rebuild();
         SceneView.lastActiveSceneView?.ShowNotification(new GUIContent("Entering Level Editor"), .1f);
 
+        playerXPosition = Mathf.Clamp01(GameSystem.GetPlayer().moveX);
         System.Type inspectorType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+        
+        // initialize editor window
         _editorWindow = EditorWindow.GetWindow<LevelEditorWindow>(desiredDockNextTo: inspectorType);
         _editorWindow.OnEraseAllEntities.AddListener(GetObjectLayer().EraseAll);
         _editorWindow.OnRebuildTrack.AddListener(Rebuild);
         _editorWindow.OnPaintEntityChanged.AddListener((obj) => { _objectToPaint = obj; });
-        
         _editorWindow.OnAddPlatform.AddListener(BuildNextPlatform);
         _editorWindow.OnDeletePlatform.AddListener(RemoveLastPlatform);
 
-        _timeline = new EditorLevelTrackTimeline();
-        _playerX_Slider = new EditorLevelTrackTimeline();
+        if (SceneView.sceneViews.Count > 0)
+        {
+            //_editorWindow.Dock(SceneView.lastActiveSceneView, Docker.DockPosition.Right);
+        }
+
+        Color timelineColor = new Color();
+        timelineColor.r = 0.1f;
+        timelineColor.g = 0.1f;
+        timelineColor.b = 0.15f;
+        timelineColor.a = 1.0f;
+
+        Color cursorColor = new Color();
+        cursorColor.r = 0.8f;
+        cursorColor.g = 0.0f;
+        cursorColor.b = 0.4f;
+        cursorColor.a = 1.0f;
+
+        Color notchColor = new Color();
+        notchColor.r = 0.2f;
+        notchColor.g = 0.2f;
+        notchColor.b = 0.25f;
+        notchColor.a = 1.0f;
+        
+        _timeline = new EditorLevelTrackTimeline(25, 
+            0.0f, 1.0f,
+            25, timelineColor, cursorColor, notchColor);
+
+        timelineColor.r *= 0.7f;
+        timelineColor.g *= 0.7f;
+        timelineColor.b *= 0.7f;
+        cursorColor.g = 0.3f;
+        cursorColor.b = 0.4f;
+        notchColor.r *= 1.5f;
+        notchColor.g *= 1.5f;
+        notchColor.b *= 1.5f;
+        _playerX_Slider = new EditorLevelTrackTimeline(10, 
+            0.0f, 1.0f,
+            25, timelineColor, cursorColor, notchColor);
     }
 
     private void OnDisable()
@@ -95,52 +135,57 @@ public class LevelEditor : EditorTool
         if (!(window is SceneView sceneView))
             return;
 
+        if (_playerX_Slider == null
+            || _timeline == null
+            || !GameSystem.IsInitialized()) return;
+
         sceneView.sceneViewState.alwaysRefresh = true;
-        
+        HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
         DrawWorldGizmos();
-        
-        if (Event.current.type == EventType.Layout)
+
+        // Handle mouse position query
+        // & adding/removing entities on mouse down
+        // Only do this if the mouse isn't too far
+        // towards the bottom of the screen.
+        float mouseY = Event.current.mousePosition.y;
+        float screenHeight = sceneView.camera.pixelRect.height;
+        if (mouseY < screenHeight - 50)
         {
-            //HandleUtility.AddDefaultControl(GUIUtility.GetControlID(GetHashCode(), FocusType.Passive));
+            HandleMouseControl(sceneView);
         }
 
-        // move scene camera to the updated game camera's orientation
-        // game camera executes in edit mode and uses in-game properties for pos/rot offset from the path.
-        // instead of emulating this we take the game camera's orientation. NOTE: FOV/Effects will differ.
-        TeleportSceneCamera(Camera.main.transform.position,
-            GameSystem.GetPlayer().transform.position - Camera.main.transform.position);
-        
-        HandleMouseControl(sceneView);
-        
         Handles.BeginGUI();
-
-        //DrawTrackWindow();
         GUILayout.FlexibleSpace();
-        using (new GUILayout.HorizontalScope("helpBox"))
+        using (new GUILayout.HorizontalScope(LevelEditorStyles.editorConsoleText))
         {
+            GUILayout.Label(string.Format("Time: {0}", GameSystem.GetTrackController().TrackTime));
             GUILayout.Label(string.Format("TT Pos: {0}", GameSystem.GetTrackController().GetTrackPosition()));
             GUILayout.Label(string.Format("TT Tan: {0}", GameSystem.GetTrackController().GetTrackTangent()));
             GUILayout.Label(string.Format("TT World Up: {0}", GameSystem.GetTrackController().GetTrackWorldUp()));
             GUILayout.FlexibleSpace();
         }
 
-        float newMoveX = _playerX_Slider.Draw(30, 0.0f, 1.0f, 0.1f);
+        float newMoveX = _playerX_Slider.Draw(playerXPosition);
         if (!playerXPosition.Equals(newMoveX))
         {
             playerXPosition = newMoveX;
             GameSystem.GetPlayer().moveX = playerXPosition;
         }
 
-        GameSystem.GetTrackController().TrackTime = _timeline.Draw(100, 0.0f, 1.0f, 0.1f);
+        GameSystem.GetTrackController().TrackTime = _timeline.Draw(GameSystem.GetTrackController().TrackTime);
         Handles.EndGUI();
+
+        // move scene camera to the updated game camera's orientation
+        // game camera executes in edit mode and uses in-game properties for pos/rot offset from the path.
+        // instead of emulating this we take the game camera's orientation. NOTE: FOV/Effects will differ.
+        TeleportSceneCamera(Camera.main.transform.position,
+            GameSystem.GetPlayer().transform.position - Camera.main.transform.position);
     }
     
     private void DrawTrackWindow()
     {
         using (new GUILayout.VerticalScope(GUILayout.MaxWidth(200)))
         {
-
-
             EditorGUI.BeginChangeCheck();
 
             DrawTrackPositionSlider();
@@ -310,36 +355,32 @@ public class LevelEditor : EditorTool
     private void HandleMouseControl(SceneView sceneView)
     {
         if (BuildMode != EBuildMode.Entity) return;
-        float mouseY = Event.current.mousePosition.y;
-        float screenHeight = sceneView.camera.pixelRect.height;
-        if (mouseY < screenHeight - 220)    
-        {
-            var worldSamplePos = SampleMousePosition();
-
-            float size = 0.5f;
-            DrawPaintPreviewGridRect(worldSamplePos, size,
-                PaintMode == EPaintMode.Paint ? Color.blue : Color.red,
-                Color.black);
         
-            // paint / erase
-            if ((Event.current.type == EventType.MouseDown 
-                || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
+        var worldSamplePos = SampleMousePosition();
+
+        float size = 0.5f;
+        DrawPaintPreviewGridRect(worldSamplePos, size,
+            PaintMode == EPaintMode.Paint ? Color.blue : Color.red,
+            Color.black);
+        
+        // paint / erase
+        if ((Event.current.type == EventType.MouseDown 
+             || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
+        {
+            if (PaintMode == EPaintMode.Paint)
             {
-                if (PaintMode == EPaintMode.Paint)
+                if (!ObjectExistsAtPosition(worldSamplePos))
                 {
-                    if (!ObjectExistsAtPosition(worldSamplePos))
-                    {
-                        AddWorldObject(worldSamplePos, Vector3.forward);
-                    }
-                    else if(_objectToPaint.canStack)
-                    {
-                        StackWorldObject(worldSamplePos, Vector3.forward);
-                    }
+                    AddWorldObject(worldSamplePos, Vector3.forward);
                 }
-                else if (PaintMode == EPaintMode.Erase)
+                else if(_objectToPaint.canStack)
                 {
-                    RemoveWorldObject(worldSamplePos);
+                    StackWorldObject(worldSamplePos, Vector3.forward);
                 }
+            }
+            else if (PaintMode == EPaintMode.Erase)
+            {
+                RemoveWorldObject(worldSamplePos);
             }
         }
     }
@@ -372,13 +413,12 @@ public class LevelEditor : EditorTool
         drawPlane.Raycast(ray, out float enter);
         var point = ray.GetPoint(enter);
         Vector3Int samplePosInt =
-            new Vector3Int(Mathf.FloorToInt(point.x), Mathf.FloorToInt(point.y), Mathf.FloorToInt(point.z));
+            new Vector3Int(Mathf.RoundToInt(point.x-0.5f), Mathf.RoundToInt(point.y), Mathf.RoundToInt(point.z-0.5f));
 
         return GameSystem.GetTrackController()._grid.GetCellCenterWorld(samplePosInt);
     }
 
     #region Entity
-
     private void AddWorldObject(Vector3 position, Vector3 rotation)
     {
         if (_objectToPaint != null)
@@ -431,7 +471,6 @@ public class LevelEditor : EditorTool
         GetObjectLayer().GetObjectsAtPosition(position, ref objsAtPos);
         return objsAtPos != null && objsAtPos.Count > 0;
     }
-
     #endregion
     
     public static void TeleportSceneCamera(Vector3 cam_position, Vector3 cam_forward)

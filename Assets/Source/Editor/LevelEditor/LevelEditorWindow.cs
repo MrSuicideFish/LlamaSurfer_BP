@@ -33,8 +33,10 @@ public class LevelEditorWindow : EditorWindow
     {
         using (new GUILayout.HorizontalScope())
         {
-            if (GUILayout.Toggle(LevelEditor.BuildMode == EBuildMode.Platform, "Platform", 
-                    LevelEditorStyles.GetBuildModeButtonStyle(LevelEditor.BuildMode == EBuildMode.Platform)))
+            if (GUILayout.Toggle(LevelEditor.BuildMode == EBuildMode.Platform, 
+                    EditorGUIUtility.IconContent("d_ToggleUVOverlay@2x"),
+                    LevelEditorStyles.GetToggleButtonStyle(LevelEditor.BuildMode == EBuildMode.Platform),
+                    GUILayout.Height(64)))
             {
                 LevelEditor.BuildMode = EBuildMode.Platform;
                 if (OnBuildModeChanged != null)
@@ -43,8 +45,10 @@ public class LevelEditorWindow : EditorWindow
                 }
             }
             
-            if (GUILayout.Toggle(LevelEditor.BuildMode == EBuildMode.Entity, "Entity",
-                    LevelEditorStyles.GetBuildModeButtonStyle(LevelEditor.BuildMode == EBuildMode.Entity)))
+            if (GUILayout.Toggle(LevelEditor.BuildMode == EBuildMode.Entity, 
+                    EditorGUIUtility.IconContent("d_LightmapEditor.WindowTitle@2x"),
+                    LevelEditorStyles.GetToggleButtonStyle(LevelEditor.BuildMode == EBuildMode.Entity),
+                    GUILayout.Height(64)))
             {
                 LevelEditor.BuildMode = EBuildMode.Entity;
                 if (OnBuildModeChanged != null)
@@ -52,6 +56,18 @@ public class LevelEditorWindow : EditorWindow
                     OnBuildModeChanged.Invoke(EBuildMode.Entity);
                 }
             }
+        }
+
+        GUILayout.Space(20);
+
+        switch (LevelEditor.BuildMode)
+        {
+            case EBuildMode.Platform:
+                DrawPlatformsPanel();
+                break;
+            case EBuildMode.Entity:
+                DrawEntitiesPanel();
+                break;
         }
     }
 
@@ -69,88 +85,108 @@ public class LevelEditorWindow : EditorWindow
         ReloadPlatformRepo();
         ReloadGraphicIcons();
     }
-    
-    private void DrawObjectWindow()
-    {
-        if (GUILayout.Button("Rebuild"))
-        {
-            if (OnRebuildTrack != null)
-            {
-                OnRebuildTrack.Invoke();
-            }
-        }
-        
-        if (GameSystem.GetTrackController().TrackCount > 2)
-        {
-            if (GUILayout.Button("Delete"))
-            {
-                if (OnDeletePlatform != null)
-                {
-                    OnDeletePlatform.Invoke();
-                }
-            }
-        }
-        
-        using (new GUILayout.VerticalScope())
-        {
-            int selection = GUILayout.SelectionGrid(LevelEditor.BuildMode.GetHashCode(), _buildModeIcons, 1, GUILayout.Width(60), GUILayout.Height(100));
-            if (selection != LevelEditor.BuildMode.GetHashCode())
-            {
-                LevelEditor.BuildMode = (EBuildMode) selection;
-                OnBuildModeChanged.Invoke((EBuildMode) selection);
-            }
-        }
-        
-        switch (LevelEditor.BuildMode)
-        {
-            case EBuildMode.Entity:
-                DrawEntitiesPanel();
-                break;
-            case EBuildMode.Platform:
-                DrawPlatformsPanel();
-                break;
-        }
-    }
 
+    private int selectedEntity = 0;
     private void DrawEntitiesPanel()
     {
-        int selection = GUILayout.SelectionGrid(LevelEditor.PaintMode.GetHashCode(), _paintModeIcons, 1);
-        if (selection != LevelEditor.PaintMode.GetHashCode())
+        using (new GUILayout.HorizontalScope())
         {
-            LevelEditor.PaintMode = (EPaintMode) selection;
-            OnPaintModeChanged.Invoke((EPaintMode)selection);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Toggle(LevelEditor.PaintMode == EPaintMode.Paint, _paintModeIcons[0], 
+                    LevelEditorStyles.GetToggleButtonStyle(LevelEditor.PaintMode == EPaintMode.Paint),
+                    GUILayout.Height(64), GUILayout.Width(150)))
+            {
+                if (LevelEditor.PaintMode != EPaintMode.Paint)
+                {
+                    LevelEditor.PaintMode = EPaintMode.Paint;
+                    OnPaintModeChanged.Invoke(EPaintMode.Paint);
+                }
+            }
+            if (GUILayout.Toggle(LevelEditor.PaintMode == EPaintMode.Erase, _paintModeIcons[1], 
+                    LevelEditorStyles.GetToggleButtonStyle(LevelEditor.PaintMode == EPaintMode.Erase),
+                    GUILayout.Height(64), GUILayout.Width(150)))
+            {
+                if (LevelEditor.PaintMode != EPaintMode.Erase)
+                {
+                    LevelEditor.PaintMode = EPaintMode.Erase;
+                    OnPaintModeChanged.Invoke(EPaintMode.Erase);
+                }
+            }
+            GUILayout.FlexibleSpace();
         }
-            
-        if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent("d_TreeEditor.Trash"))))
+        
+        GUILayout.Space(15);
+        
+        using (new GUILayout.ScrollViewScope(_entityViewScrollPos, GUI.skin.box))
+        {
+            using (new GUILayout.HorizontalScope())
+            {
+                for (int i = 0; i < _objectRepo.Length; i++)
+                {
+                    if (GUILayout.Toggle(selectedEntity == i, 
+                        _objectThumbnails[i], LevelEditorStyles.GetToggleButtonStyle(selectedEntity == i),
+                    GUILayout.Width(100), GUILayout.Height(100)))
+                    {
+                        selectedEntity = i;
+                        OnPaintEntityChanged.Invoke(_objectRepo[i]);
+                    }
+                }
+            }
+            GUILayout.FlexibleSpace();
+        }
+        GUIContent deleteAllContent = new GUIContent(EditorGUIUtility.IconContent("d_winbtn_mac_close_a@2x"));
+        deleteAllContent.text = "Delete All Objects";
+        if (GUILayout.Button(deleteAllContent, GUILayout.Height(64)))
         {
             if (OnEraseAllEntities != null)
             {
                 OnEraseAllEntities.Invoke();
             }
         }
-        
-        using (new GUILayout.ScrollViewScope(_entityViewScrollPos))
-        {
-            for (int i = 0; i < _objectRepo.Length; i++)
-            {
-                if (GUILayout.Button(_objectThumbnails[i], GUILayout.Width(100), GUILayout.Height(100)))
-                {
-                    OnPaintEntityChanged.Invoke(_objectRepo[i]);
-                }
-            }
-        }
-
     }
-    
+
     private void DrawPlatformsPanel()
     {
-        for (int i = 0; i < _platformRepo.Length; i++)
+        using (new GUILayout.HorizontalScope())
         {
-            if (GUILayout.Button(_platformThumbnails[i], GUILayout.Width(100), GUILayout.Height(100)))
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(EditorGUIUtility.IconContent("d_Refresh@2x"),
+                    GUILayout.Height(64), GUILayout.Width(150)))
             {
-                if (OnAddPlatform != null)
+                if (OnRebuildTrack != null)
                 {
-                    OnAddPlatform.Invoke(_platformRepo[i]);
+                    OnRebuildTrack.Invoke();
+                }
+            }
+        
+            if (GameSystem.GetTrackController().TrackCount > 2)
+            {
+                if (GUILayout.Button(EditorGUIUtility.IconContent("P4_DeletedLocal@2x"), 
+                        GUILayout.Height(64), GUILayout.Width(150)))
+                {
+                    if (OnDeletePlatform != null)
+                    {
+                        OnDeletePlatform.Invoke();
+                    }
+                }
+            }
+            GUILayout.FlexibleSpace();
+        }
+        
+        GUILayout.Space(15);
+        using (new GUILayout.ScrollViewScope(_platformViewScrollPos, GUI.skin.box))
+        {
+            using (new GUILayout.HorizontalScope())
+            {
+                for (int i = 0; i < _platformRepo.Length; i++)
+                {
+                    if (GUILayout.Button(_platformThumbnails[i], GUILayout.Width(100), GUILayout.Height(100)))
+                    {
+                        if (OnAddPlatform != null)
+                        {
+                            OnAddPlatform.Invoke(_platformRepo[i]);
+                        }
+                    }
                 }
             }
         }

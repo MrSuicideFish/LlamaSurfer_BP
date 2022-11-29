@@ -103,7 +103,7 @@ public class WorldObjectLayer : MonoBehaviour
 
     public void EraseAll()
     {
-        if (allObjects != null && allObjects.Count > 0) return;
+        if (allObjects == null || allObjects.Count == 0) return;
         for (int i = 0; i < allObjects.Count; i++)
         {
             for (int j = 0; j < allObjects[i].objects.Count; j++)
@@ -113,7 +113,7 @@ public class WorldObjectLayer : MonoBehaviour
             allObjects[i].objects.Clear();
         }
         allObjects.Clear();
-        GameObject.DestroyImmediate(this.gameObject);
+        GameObject.DestroyImmediate(gameObject);
     }
 
     private void OnValidate()

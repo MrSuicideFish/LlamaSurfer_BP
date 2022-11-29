@@ -49,8 +49,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private Vector3 targetPosition;
-    private Vector3 targetRotation;
+    private Vector3 targetPosition = Vector3.zero;
+    private Vector3 targetRotation = Vector3.zero;
 
     public static float Remap (float from, float fromMin, float fromMax, float toMin,  float toMax)
     {
@@ -70,7 +70,13 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         UpdatePositionAndRotation();
-
+        
+        if (float.IsNegativeInfinity(targetPosition.x) 
+            || float.IsPositiveInfinity(targetPosition.x))
+        {
+            return;
+        }
+        
         transform.position = targetPosition;
 
         if (Math.Abs(targetRotation.magnitude - Double.Epsilon) > 0.01f)

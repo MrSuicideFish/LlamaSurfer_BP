@@ -15,6 +15,11 @@ public class GameSystem : MonoBehaviour
     [SerializeField] private TrackController _trackController;
     [SerializeField] private CameraController _camera;
 
+    public static bool IsInitialized()
+    {
+        return _inst != null;
+    }
+
     private static GameSystem TryGetGameSystem()
     {
         if (_inst == null)

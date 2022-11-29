@@ -8,7 +8,7 @@ public static class LevelEditorStyles
 
     private static Dictionary<int, Texture2D> _texture_cache = new Dictionary<int, Texture2D>();
 
-    private static Texture2D GetOrCreateTexture(Color color)
+    public static Texture2D GetOrCreateTexture(Color color)
     {
         int hashCode = color.GetHashCode();
         if (!_texture_cache.ContainsKey(hashCode))
@@ -53,37 +53,17 @@ public static class LevelEditorStyles
         }
     }
 
-    public static GUIStyle GetBuildModeButtonStyle(bool pressed)
+    public static GUIStyle GetToggleButtonStyle(bool pressed)
     {
         return pressed ? buildModeButtonPressed : buildModeButton;
     }
-
-    public static GUIStyle timelineStyle
+    
+    public static GUIStyle editorConsoleText
     {
         get
         {
-            GUIStyle style = new GUIStyle();
-            style.normal.background = GetOrCreateTexture(Color.grey * 0.8f);
-            return style;
-        }
-    }
-
-    public static GUIStyle timelineCursorStyle
-    {
-        get
-        {
-            GUIStyle style = new GUIStyle();
-            style.normal.background = GetOrCreateTexture(new Color(0.5f, 0.5f,1.0f));
-            return style;
-        }
-    }
-
-    public static GUIStyle timelineNotchStyle
-    {
-        get
-        {
-            GUIStyle style = new GUIStyle();
-            style.normal.background = GetOrCreateTexture(Color.white * 0.5f);
+            GUIStyle style = GUI.skin.label;
+            style.normal.textColor = Color.blue;
             return style;
         }
     }
