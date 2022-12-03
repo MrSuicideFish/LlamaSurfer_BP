@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3887e02359043699877b4df4617095c, type: 3}
   m_Name: GameProperties
   m_EditorClassIdentifier: 
-  trackPlaybackSpeed: 15
+  trackPlaybackSpeed: 10

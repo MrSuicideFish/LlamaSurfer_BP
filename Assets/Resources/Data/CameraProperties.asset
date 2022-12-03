@@ -16,6 +16,6 @@ MonoBehaviour:
   verticalArmLength: 4.1
   cameraSide: 1
   cameraDistance: 2
-  bodyOffset: {x: 0.62, y: -0.18, z: -4.47}
+  bodyOffset: {x: 0.41, y: -0.18, z: -4.47}
   bodyDamping: {x: 0, y: 0, z: 0}
-  aimOffset: {x: 0.68, y: 5.13, z: 0}
+  aimOffset: {x: 0.29, y: 5.13, z: 0}

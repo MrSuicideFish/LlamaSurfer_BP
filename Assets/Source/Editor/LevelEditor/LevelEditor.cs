@@ -72,11 +72,7 @@ public class LevelEditor : EditorTool
         _editorWindow.OnAddPlatform.AddListener(BuildNextPlatform);
         _editorWindow.OnDeletePlatform.AddListener(RemoveLastPlatform);
 
-        if (SceneView.sceneViews.Count > 0)
-        {
-            //_editorWindow.Dock(SceneView.lastActiveSceneView, Docker.DockPosition.Right);
-        }
-
+        
         Color timelineColor = new Color();
         timelineColor.r = 0.1f;
         timelineColor.g = 0.1f;

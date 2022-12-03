@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: TemplateLevelCfg
   m_EditorClassIdentifier: 
   sceneIndex: -1
-  maxPoints: 0
+  maxPoints: 125
