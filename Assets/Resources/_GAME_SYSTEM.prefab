@@ -51,7 +51,7 @@ MonoBehaviour:
   _platforms: []
   _startPlatform: {fileID: 0}
   _finishPlatform: {fileID: 0}
-  playbackSpeed: 1
+  _checkpoints: []
   OnTrackStart:
     m_PersistentCalls:
       m_Calls: []
@@ -476,6 +476,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72495cce6e8a10b49b0aed9aed98ce7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gameManager: {fileID: 8312223137534779739}
+  _player: {fileID: 8486301627749516112}
+  _trackController: {fileID: 8312223136567155196}
+  _camera: {fileID: 8312223136898999058}
 --- !u!1 &8312223137534779737
 GameObject:
   m_ObjectHideFlags: 0
@@ -611,3 +615,15 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8486301628320455555}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8486301627749516112 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1711823059, guid: 5c391512cbf800749892711f4af558b1,
+    type: 3}
+  m_PrefabInstance: {fileID: 8486301628320455555}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 790be8e7b2ffa95419a5dc59d628a844, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

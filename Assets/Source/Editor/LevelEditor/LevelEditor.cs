@@ -1,16 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.EditorTools;
-using UnityEditor.Overlays;
 using UnityEditor.SceneManagement;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
+using UnityEngine.Splines;
 using Object = UnityEngine.Object;
 
 public enum EPaintMode
@@ -51,8 +46,9 @@ public class LevelEditor : EditorTool
 
     public override void OnActivated()
     {
+        if (!GameSystem.GetTrackController() == null) return;
         if (Application.isPlaying) return;
-        if (GameSystem.GetTrackController().TrackCount == 0)
+        if (TrackCount == 0)
         {
             BuildStartPlatform();
             BuildFinishPlatform();
@@ -128,7 +124,8 @@ public class LevelEditor : EditorTool
 
     public override void OnToolGUI(EditorWindow window)
     {
-        if (!(window is SceneView sceneView))
+        if (!(window is SceneView sceneView)
+            || !GameSystem.GetTrackController() == null)
             return;
 
         if (_playerX_Slider == null
@@ -188,7 +185,7 @@ public class LevelEditor : EditorTool
             
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(GameSystem.GetTrackController().GetPlatformContainer(), "change platforms");
+                Undo.RecordObject(GetPlatformContainer(), "change platforms");
                 Undo.RecordObject(GameSystem.GetTrackController(), "change track");
             }
         }
@@ -274,7 +271,7 @@ public class LevelEditor : EditorTool
         if (platformRes != null)
         {
             Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-            GameSystem.GetTrackController().AddStartPlatform(p);
+            AddStartPlatform(p);
             Rebuild();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
@@ -287,7 +284,7 @@ public class LevelEditor : EditorTool
         if (platformRes != null)
         {
             Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-            GameSystem.GetTrackController().AddFinishPlatform(p);
+            AddFinishPlatform(p);
             Rebuild();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
@@ -298,15 +295,16 @@ public class LevelEditor : EditorTool
         Platform newPlatform = PrefabUtility.InstantiatePrefab(platform) as Platform;
         if (newPlatform != null)
         {
-            GameSystem.GetTrackController().AddPlatform(newPlatform);
+            AddPlatform(newPlatform);
             Rebuild();
+            Debug.Log(GetTrackTimeByPosition(newPlatform.trackPoints[0].position));
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
     }
 
     public void RemoveLastPlatform()
     {
-        GameSystem.GetTrackController().RemoveLast();
+        RemoveLast();
         Rebuild();
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
     }
@@ -314,11 +312,11 @@ public class LevelEditor : EditorTool
 
     private void Rebuild()
     {
-        GameSystem.GetTrackController().ClearTrackNodes();
+        ClearTrackNodes();
         
         for (int i = 0; i < GameSystem.GetTrackController()._platforms.Count; i++)
         {
-            Platform platform = GameSystem.GetTrackController()._platforms[i];
+            Platform platform = GameSystem.GetTrackController()._platforms[i].platform;
             
             if (platform != null)
             {
@@ -340,9 +338,9 @@ public class LevelEditor : EditorTool
                     nextPos = !isLast ? platform.trackPoints[j + 1].position : currentPos;
                     lastPos = (j - 1 >= 0) ? platform.trackPoints[j - 1].position : currentPos;
 
-                    TrackNodeInfo newTrackNode = new TrackNodeInfo(
+                    TrackNodeTanInfo newTrackNodeTan = new TrackNodeTanInfo(
                         currentPos, currentRotation, float3.zero, float3.zero);
-                    GameSystem.GetTrackController().AddTrackNode(newTrackNode);
+                    AddTrackNode(newTrackNodeTan);
                 }   
             }
         }
@@ -488,5 +486,204 @@ public class LevelEditor : EditorTool
             target.transform.rotation = Quaternion.LookRotation(cam_forward);
             scene_view.AlignViewToObject(target.transform);
         }
+    }
+    
+    public int TrackCount
+    {
+        get
+        {
+            return GetPlatformContainer().childCount;
+        }
+    }
+    
+    public void OnValidate()
+    {
+        MoveFinishPlatformToEnd();
+    }
+    
+    private Transform _platformContainer;
+    public Transform GetPlatformContainer()
+    {
+        if (_platformContainer == null)
+        {
+            GameObject existing = GameObject.FindGameObjectWithTag("PlatformContainer");
+            if (existing != null)
+            {
+                _platformContainer = existing.transform;
+            }
+            else
+            {
+                _platformContainer = new GameObject("_PLATFORMS").transform;
+                _platformContainer.gameObject.tag = "PlatformContainer";
+            }
+        }
+
+        return _platformContainer;
+    }
+    
+    public void AddStartPlatform(Platform newPlatform)
+    {
+        if (GameSystem.GetTrackController()._startPlatform != null)
+        {
+            return;
+        }
+        
+        newPlatform.transform.position = Vector3.zero;
+        newPlatform.transform.forward = Vector3.forward;
+        TrackNodeInfo nodeInfo = new TrackNodeInfo(newPlatform);
+        nodeInfo.time = 0.0f;
+        nodeInfo.isCheckpoint = false;
+        GameSystem.GetTrackController()._platforms.Add(nodeInfo);
+        
+        newPlatform.transform.SetParent(GetPlatformContainer());
+        GameSystem.GetTrackController()._startPlatform = newPlatform;
+    }
+
+    public void AddFinishPlatform(Platform newPlatform)
+    {
+        if (GameSystem.GetTrackController()._finishPlatform != null)
+        {
+            return;
+        }
+
+        Platform lastPlatform = GameSystem.GetTrackController()._platforms[GetLastPlatformIndex()].platform;
+        if (lastPlatform != null)
+        {
+            newPlatform.transform.position = lastPlatform.platformExit.position;
+            newPlatform.transform.forward = lastPlatform.platformExit.forward;
+        }
+
+        TrackNodeInfo nodeInfo = new TrackNodeInfo(newPlatform);
+        nodeInfo.time = 1.0f;
+        nodeInfo.isCheckpoint = false;
+        
+        GameSystem.GetTrackController()._platforms.Add(nodeInfo);
+        GameSystem.GetTrackController()._finishPlatform = newPlatform;
+        
+        newPlatform.transform.SetParent(GetPlatformContainer());
+    }
+
+    public void AddPlatform(Platform newPlatform, bool isCheckpoint = false)
+    {
+        Platform lastPlatform = GameSystem.GetTrackController()._platforms[GetLastPlatformIndex()].platform;
+        newPlatform.transform.position = lastPlatform.platformExit.position;
+        newPlatform.transform.forward = lastPlatform.platformExit.forward;
+        newPlatform.transform.SetParent(GetPlatformContainer());
+        
+        TrackNodeInfo nodeInfo = new TrackNodeInfo(newPlatform);
+        nodeInfo.time = 1.0f;
+        nodeInfo.isCheckpoint = isCheckpoint;
+
+        GameSystem.GetTrackController()._platforms.Add(nodeInfo);
+
+        MoveFinishPlatformToEnd();
+    }
+
+    public int GetLastPlatformIndex()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        int result = 0;
+        for (int i = track._platforms.Count - 1; i >= 0; i--)
+        {
+            if (track._platforms[i] != null && !track._platforms[i].platform.isFinishPlatform)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private int GetFinishPlatformIndex()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        int result = 0;
+        for (int i = 0; i < track._platforms.Count; i++)
+        {
+            if (track._platforms[i] != null && track._platforms[i].platform.isFinishPlatform)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public void RemoveLast()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track._platforms == null || TrackCount == 0 
+                                    || track._startPlatform == null 
+                                    || track._finishPlatform == null)
+        {
+            return;
+        }
+
+        if (track._platforms.Count <= 2)
+        {
+            MoveFinishPlatformToEnd();
+            return;
+        }
+
+        int last = GetLastPlatformIndex();
+        GameObject.DestroyImmediate(track._platforms[last].platform.gameObject);
+        track._platforms.RemoveAt(last);
+        MoveFinishPlatformToEnd();
+    }
+
+    private void MoveFinishPlatformToEnd()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track._platforms.Count < 2 || track._startPlatform == null || track._finishPlatform == null)
+        {
+            return;
+        }
+        
+        Platform lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
+        if (lastPlatform != null)
+        {
+            track._finishPlatform.transform.position = lastPlatform.platformExit.position;
+            track._finishPlatform.transform.forward = lastPlatform.platformExit.forward;
+
+            track._platforms.RemoveAt(GetFinishPlatformIndex());
+            track._finishPlatform.transform.SetAsLastSibling();
+            TrackNodeInfo nodeInfo = new TrackNodeInfo(track._finishPlatform);
+            nodeInfo.time = 1.0f;
+            nodeInfo.isCheckpoint = false;
+            track._platforms.Add(nodeInfo);
+        }
+    }
+
+    public void AddTrackNode(TrackNodeTanInfo tanInfo)
+    {
+        BezierKnot knot = new BezierKnot(
+            tanInfo.position, tanInfo.tangentIn, 
+            tanInfo.tangentOut, tanInfo.rotation); 
+        GameSystem.GetTrackController().spline.Spline.Add(knot);
+    }
+
+    public void ClearTrackNodes()
+    {
+        GameSystem.GetTrackController().spline.Spline.Clear();
+    }
+
+    private float GetTrackTimeByPosition(Vector3 position, float threshold = 0.5f)
+    {
+        float result = 0.0f;
+        var e = GameSystem.GetTrackController().spline.Spline.GetEnumerator();
+        int count = 0;
+        while (e.MoveNext() != null)
+        {
+            BezierKnot k = e.Current;
+            if (k.Position.x - position.x < threshold
+                && k.Position.z - position.z < threshold)
+            {
+                result = count / GameSystem.GetTrackController().spline.Spline.Count;
+            }
+
+            count++;
+        }
+
+        return result;
     }
 }
