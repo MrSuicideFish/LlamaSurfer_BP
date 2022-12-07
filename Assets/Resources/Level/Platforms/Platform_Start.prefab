@@ -110,12 +110,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d972f1a0667044cb9c7ca97963f7d758, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _id: 0
   platformExit: {fileID: 284762598596131647}
   trackPoints:
   - {fileID: 284762599848554192}
   isStartPlatform: 1
   isFinishPlatform: 0
+  isCheckpoint: 0
 --- !u!65 &4356369405817361609
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -190,7 +190,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 467db2a28dc1c6a45b450dc6d124de59, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

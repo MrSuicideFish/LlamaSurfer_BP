@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: d642a4ab722ef8a46af4d261e5227b0c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -193,12 +193,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d972f1a0667044cb9c7ca97963f7d758, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _id: 0
   platformExit: {fileID: 5014185253991333028}
   trackPoints:
   - {fileID: 5014185255260531019}
   isStartPlatform: 0
   isFinishPlatform: 1
+  isCheckpoint: 0
 --- !u!65 &8669069261065497358
 BoxCollider:
   m_ObjectHideFlags: 0

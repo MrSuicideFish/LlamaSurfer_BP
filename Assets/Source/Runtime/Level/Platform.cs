@@ -2,11 +2,18 @@
 
 public class Platform : MonoBehaviour
 {
+    public enum EPlatformType
+    {
+        Start,
+        Finish,
+        Checkpoint,
+        Normal
+    }
+    
     // PREFAB DATA, DO NOT REMOVE
     public Transform platformExit;
     public Transform[] trackPoints;
 
-    public bool isStartPlatform;
-    public bool isFinishPlatform;
+    public EPlatformType PlatformType;
     //------------------------------------------------------------
 }
