@@ -25,6 +25,7 @@ public class GameApplicationHandle : MonoBehaviour
     public static void OnApplicationStart()
     {
         Debug.Log("Application Handle Loaded");
+        PlayerData.Load();
     }
 
     private void OnApplicationQuit()
