@@ -41,12 +41,11 @@ public class TimelineProgressBar : MonoBehaviour
         TrackController track = GameSystem.GetTrackController();
         if (track != null)
         {
-            float[] checkpoints = track.GetCheckpoints();
-            if (checkpoints != null && checkpoints.Length > 0)
+            if (track.Checkpoints != null && track.Checkpoints.Length > 0)
             {
-                for (int i = 0; i < checkpoints.Length; i++)
+                for (int i = 0; i < track.Checkpoints.Length; i++)
                 {
-                    AddCheckpoint(checkpoints[i]);
+                    AddCheckpoint(track.Checkpoints[i]);
                 }
             }
         }

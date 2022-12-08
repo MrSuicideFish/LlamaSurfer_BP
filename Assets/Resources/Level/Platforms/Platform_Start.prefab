@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 284762598596131644}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 5.716}
+  m_LocalPosition: {x: 0.003, y: -0.0000019620898, z: 6.0960007}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -72,7 +72,6 @@ GameObject:
   m_Component:
   - component: {fileID: 284762599884817369}
   - component: {fileID: 284762599884817368}
-  - component: {fileID: 4356369405817361609}
   m_Layer: 0
   m_Name: Platform_Start
   m_TagString: Untagged
@@ -113,22 +112,7 @@ MonoBehaviour:
   platformExit: {fileID: 284762598596131647}
   trackPoints:
   - {fileID: 284762599848554192}
-  isStartPlatform: 1
-  isFinishPlatform: 0
-  isCheckpoint: 0
---- !u!65 &4356369405817361609
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 284762599884817366}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 6, y: 6, z: 5.713986}
-  m_Center: {x: -0.014450669, y: -3, z: 2.856993}
+  PlatformType: 0
 --- !u!1 &1470410584527950809
 GameObject:
   m_ObjectHideFlags: 0
@@ -140,6 +124,7 @@ GameObject:
   - component: {fileID: 1910822453628349708}
   - component: {fileID: 3959231401768810545}
   - component: {fileID: 695915465121928952}
+  - component: {fileID: 4038735099058000467}
   m_Layer: 0
   m_Name: Path_Center
   m_TagString: Untagged
@@ -212,3 +197,16 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &4038735099058000467
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1470410584527950809}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 6.0960026, y: 6.0960016, z: 12.192004}
+  m_Center: {x: -3.0479999, y: -9.663381e-13, z: -6.0960035}

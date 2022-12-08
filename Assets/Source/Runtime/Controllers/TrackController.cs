@@ -20,8 +20,7 @@ public class TrackController : MonoBehaviour
     public List<TrackNodeInfo> _platforms;
     public TrackNodeInfo _startPlatform;
     public TrackNodeInfo _finishPlatform;
-    public float[] _checkpoints;
-    
+
     public UnityEvent OnTrackStart;
     public UnityEvent OnTrackEnd;
     
@@ -133,9 +132,20 @@ public class TrackController : MonoBehaviour
         SetTrackTime(TrackTime + amount);
     }
 
+    private int checkpointQueryIndex = 0;
     private void Step()
     {
         TrackTime += (1.0f / spline.Spline.GetLength()) * GameProperties.Get().trackPlaybackSpeed * Time.deltaTime;
+
+        if (checkpointQueryIndex < Checkpoints.Length)
+        {
+            if (TrackTime > Checkpoints[checkpointQueryIndex])
+            {
+                GameSystem.GetGameManager().AddCheckpoint(Checkpoints[checkpointQueryIndex]);
+                checkpointQueryIndex++;
+            }
+        }
+
         if (TrackTime >= MAX_TRACK_POSITION)
         {
             End();
@@ -159,13 +169,33 @@ public class TrackController : MonoBehaviour
         }
     }
 
-    public float[] GetCheckpoints()
+    private float[] _checkpoints;
+
+    public float[] Checkpoints
     {
-        if (_checkpoints == null)
+        get
         {
-            _checkpoints = Array.Empty<float>();
+            if (_platforms != null)
+            {
+                if (_checkpoints == null)
+                {
+                    List<float> c = new List<float>();
+                    for (int i = 0; i < _platforms.Count; i++)
+                    {
+                        if (_platforms[i].platform.PlatformType == Platform.EPlatformType.Checkpoint)
+                        {
+                            c.Add(_platforms[i].time);
+                        }
+                    }
+
+                    _checkpoints = c.ToArray();
+                }
+
+                return _checkpoints;
+            }
+
+            return Array.Empty<float>();
         }
-        return _checkpoints;
     }
 
     public Vector3 GetTrackPositionAt(float time)
