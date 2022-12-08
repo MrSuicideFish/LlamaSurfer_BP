@@ -144,9 +144,7 @@ MonoBehaviour:
   platformExit: {fileID: 5422882493624897792}
   trackPoints:
   - {fileID: 6842848712136514402}
-  isStartPlatform: 0
-  isFinishPlatform: 0
-  isCheckpoint: 0
+  PlatformType: 3
 --- !u!1 &6704760070446174262
 GameObject:
   m_ObjectHideFlags: 0

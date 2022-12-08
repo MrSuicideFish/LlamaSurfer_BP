@@ -18,8 +18,8 @@ public class TrackController : MonoBehaviour
     
     // platforms
     public List<TrackNodeInfo> _platforms;
-    public Platform _startPlatform;
-    public Platform _finishPlatform;
+    public TrackNodeInfo _startPlatform;
+    public TrackNodeInfo _finishPlatform;
     public float[] _checkpoints;
     
     public UnityEvent OnTrackStart;
@@ -183,6 +183,14 @@ public class TrackController : MonoBehaviour
     public Vector3 GetTrackWorldUp()
     {
         return _trackWorldUp;
+    }
+    
+    public float GetTrackTimeByPosition(Vector3 position, float threshold = 0.5f)
+    {
+        float3 nearestVec;
+        float nearestT;
+        SplineUtility.GetNearestPoint(spline.Spline, position, out nearestVec, out nearestT);
+        return nearestT;
     }
 
 

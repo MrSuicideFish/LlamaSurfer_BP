@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEditor.SceneManagement;
@@ -64,7 +66,7 @@ public class LevelEditor : EditorTool
         _editorWindow.OnEraseAllEntities.AddListener(GetObjectLayer().EraseAll);
         _editorWindow.OnPaintEntityChanged.AddListener((obj) => { _objectToPaint = obj; });
         _editorWindow.OnAddPlatform.AddListener(BuildNextPlatform);
-        _editorWindow.OnDeletePlatform.AddListener(RemoveLastPlatform);
+        _editorWindow.OnDeletePlatform.AddListener(RemoveLast);
 
         
         Color timelineColor = new Color();
@@ -268,12 +270,11 @@ public class LevelEditor : EditorTool
         if (track != null)
         {
             const string startPlatformPath = "Level/Platforms/Platform_Start";
-            Object platformRes = Resources.Load<Platform>(startPlatformPath);
-            if (platformRes != null)
+            Object resource = Resources.Load<Platform>(startPlatformPath);
+            if (resource != null)
             {
-                Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-                AddPlatform(p);
-                EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+                Platform startPlatform = PrefabUtility.InstantiatePrefab(resource) as Platform;
+                AddPlatform(startPlatform);
             }
         }
     }
@@ -284,13 +285,11 @@ public class LevelEditor : EditorTool
         if (track != null)
         {
             const string finishPlatformPath = "Level/Platforms/Platform_Finish";
-            Object platformRes = Resources.Load<Platform>(finishPlatformPath);
-            if (platformRes != null)
+            Object resource = Resources.Load<Platform>(finishPlatformPath);
+            if (resource != null)
             {
-                Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-                track._finishPlatform = p;
-                AddPlatform(p);
-                EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+                Platform finishPlatform = PrefabUtility.InstantiatePrefab(resource) as Platform;
+                AddPlatform(finishPlatform);
             }
         }
     }
@@ -304,18 +303,11 @@ public class LevelEditor : EditorTool
             if (newPlatform != null)
             {
                 AddPlatform(newPlatform);
-                EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             }
         }
     }
 
-    public void RemoveLastPlatform()
-    {
-        RemoveLast();
-        EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-    }
-    
-        
+
     private Transform _platformContainer;
     public Transform GetPlatformContainer()
     {
@@ -346,49 +338,64 @@ public class LevelEditor : EditorTool
                 track._platforms = new List<TrackNodeInfo>();
             }
 
-            float trackTime;
-            if (track.TrackCount == 0)
-            {
-                // adding start platform
-                newPlatform.transform.position = GetPlatformContainer().position;
-                newPlatform.transform.forward = GetPlatformContainer().forward;
-                track._startPlatform = newPlatform;
-                trackTime = 0.0f;
-            }
-            else
-            {
-                if (newPlatform.PlatformType == Platform.EPlatformType.Finish)
-                {
-                    Platform lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
-                    newPlatform.transform.position = lastPlatform.platformExit.position;
-                    newPlatform.transform.forward = lastPlatform.platformExit.forward;
-                    
-                    track._finishPlatform = newPlatform;
-                    trackTime = 1.0f;
-                }
-                else
-                {
-                    // find last non-finish platform and append to the end of that one
-                    Platform lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
-                    if (lastPlatform != null)
-                    {
-                        newPlatform.transform.position = lastPlatform.platformExit.position;
-                        newPlatform.transform.forward = lastPlatform.platformExit.forward;
-                    }
-                    
-                    // remove finish platform and append to end
-                    trackTime = GetTrackTimeByPosition(lastPlatform.platformExit.position);
-                }
-            }
-            
-            // parent to container
-            newPlatform.transform.SetParent(GetPlatformContainer());
-            
+            Platform lastPlatform = null;
             TrackNodeInfo newNode = new TrackNodeInfo();
             newNode.platform = newPlatform;
             newNode.isCheckpoint = newPlatform.PlatformType == Platform.EPlatformType.Checkpoint;
-            track._platforms.Add(newNode);
+            newPlatform.transform.SetParent(GetPlatformContainer());
+            
+            switch (newPlatform.PlatformType)
+            {
+                case Platform.EPlatformType.Start:
+                    newPlatform.transform.position = GetPlatformContainer().position;
+                    newPlatform.transform.forward = GetPlatformContainer().forward;
+                    newNode.time = 0.0f;
+                    track._startPlatform = newNode;
+                    track._platforms.Add(newNode);
+                    track.spline.Spline.Clear();
+                    AppendPlatformKnots(newPlatform);
+                    break;
+                case Platform.EPlatformType.Finish:
+                    lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
+                    newPlatform.transform.position = lastPlatform.platformExit.position;
+                    newPlatform.transform.forward = lastPlatform.platformExit.forward;
+                    newNode.time = 1.0f;
+                    track._finishPlatform = newNode;
+                    track._platforms.Add(newNode);
+                    AppendPlatformKnots(newPlatform);
+                    break;
+                default:
+                    lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
+                    RemoveFinishPlatform();
+                    newPlatform.transform.position = lastPlatform.platformExit.position;
+                    newPlatform.transform.forward = lastPlatform.platformExit.forward;
+                    AppendPlatformKnots(newPlatform);
+                    track._platforms.Add(newNode);
+                    BuildFinishPlatform();
+                    break;
+            }
+            
+            ValidateNodeTime();
         }
+    }
+
+    private void OnValidate()
+    {
+        ValidateNodeTime();
+    }
+
+    private void ValidateNodeTime()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            for (int i = 0; i < track._platforms.Count; i++)
+            {
+                TrackNodeInfo node = track._platforms[i];
+                node.time = track.GetTrackTimeByPosition(node.platform.trackPoints[0].position);
+            }
+        }
+
     }
 
     public int GetLastPlatformIndex()
@@ -397,7 +404,7 @@ public class LevelEditor : EditorTool
         int result = 0;
         for (int i = track._platforms.Count - 1; i >= 0; i--)
         {
-            if (track._platforms[i] != null && !track._platforms[i].platform.isFinishPlatform)
+            if (track._platforms[i] != null && track._platforms[i].platform.PlatformType != Platform.EPlatformType.Finish)
             {
                 result = i;
                 break;
@@ -408,14 +415,18 @@ public class LevelEditor : EditorTool
 
     private int GetFinishPlatformIndex()
     {
-        TrackController track = GameSystem.GetTrackController();
         int result = 0;
-        for (int i = 0; i < track._platforms.Count; i++)
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
         {
-            if (track._platforms[i] != null && track._platforms[i].platform.isFinishPlatform)
+            for (int i = 0; i < track._platforms.Count; i++)
             {
-                result = i;
-                break;
+                if (track._platforms[i] != null
+                    && track._platforms[i].platform.PlatformType == Platform.EPlatformType.Finish)
+                {
+                    result = i;
+                    break;
+                }
             }
         }
         return result;
@@ -425,44 +436,48 @@ public class LevelEditor : EditorTool
     {
         TrackController track = GameSystem.GetTrackController();
         if (track._platforms == null || TrackCount == 0 
+                                     || TrackCount <= 2
                                     || track._startPlatform == null 
                                     || track._finishPlatform == null)
         {
             return;
         }
 
-        if (track._platforms.Count <= 2)
-        {
-            MoveFinishPlatformToEnd();
-            return;
-        }
-
         int last = GetLastPlatformIndex();
-        GameObject.DestroyImmediate(track._platforms[last].platform.gameObject);
-        track._platforms.RemoveAt(last);
-        MoveFinishPlatformToEnd();
+        TrackNodeInfo lastNode = track._platforms[last];
+        if (lastNode != null)
+        {
+            RemovePlatformKnots(lastNode.platform);
+            DestroyImmediate(lastNode.platform.gameObject);
+            track._platforms.RemoveAt(last);
+            
+            RemoveFinishPlatform();
+            BuildFinishPlatform();
+        }
     }
 
-    private void MoveFinishPlatformToEnd()
+    private void RemoveFinishPlatform()
     {
         TrackController track = GameSystem.GetTrackController();
-        if (track._platforms.Count < 2 || track._startPlatform == null || track._finishPlatform == null)
+        if (track != null)
         {
-            return;
-        }
-        
-        Platform lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
-        if (lastPlatform != null)
-        {
-            track._finishPlatform.transform.position = lastPlatform.platformExit.position;
-            track._finishPlatform.transform.forward = lastPlatform.platformExit.forward;
+            if (track._platforms.Count < 2 
+                || track._startPlatform == null 
+                || track._finishPlatform == null)
+            {
+                return;
+            }
 
-            track._platforms.RemoveAt(GetFinishPlatformIndex());
-            track._finishPlatform.transform.SetAsLastSibling();
-            TrackNodeInfo nodeInfo = new TrackNodeInfo(track._finishPlatform);
-            nodeInfo.time = 1.0f;
-            nodeInfo.isCheckpoint = false;
-            track._platforms.Add(nodeInfo);
+            int finishNodeIdx = GetFinishPlatformIndex();
+            TrackNodeInfo finishNode = track._platforms[finishNodeIdx];
+            if (finishNode != null)
+            {
+                // remove finish platform
+                RemovePlatformKnots(track._finishPlatform.platform);
+                DestroyImmediate(track._finishPlatform.platform.gameObject);
+                track._platforms.RemoveAt(finishNodeIdx);
+                track._finishPlatform = null;
+            }
         }
     }
     
@@ -662,28 +677,5 @@ public class LevelEditor : EditorTool
         {
             return GetPlatformContainer().childCount;
         }
-    }
-    
-    public void OnValidate()
-    {
-        MoveFinishPlatformToEnd();
-    }
-
-
-    private float GetTrackTimeByPosition(Vector3 position, float threshold = 0.5f)
-    {
-        float result = 0.0f;
-        Spline spline = GameSystem.GetTrackController().spline.Spline;
-        for(int i = 0; i < spline.Count; i++)
-        {
-            BezierKnot k = spline[i];
-            if (Vector3.Distance(k.Position, position) < threshold)
-            {
-                result = (float)i / (float)spline.Count;
-                break;
-            }
-        }
-
-        return result;
     }
 }

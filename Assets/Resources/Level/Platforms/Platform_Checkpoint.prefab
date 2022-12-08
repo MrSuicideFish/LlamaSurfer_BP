@@ -51,9 +51,7 @@ MonoBehaviour:
   platformExit: {fileID: 7499253143595187616}
   trackPoints:
   - {fileID: 7499253142900533327}
-  isStartPlatform: 0
-  isFinishPlatform: 0
-  isCheckpoint: 1
+  PlatformType: 2
 --- !u!65 &6311218697260552790
 BoxCollider:
   m_ObjectHideFlags: 0

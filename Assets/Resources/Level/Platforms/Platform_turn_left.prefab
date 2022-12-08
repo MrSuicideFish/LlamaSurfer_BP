@@ -91,9 +91,7 @@ MonoBehaviour:
   - {fileID: 2177092564135448042}
   - {fileID: 1510655027611021252}
   - {fileID: 3433252095981528759}
-  isStartPlatform: 0
-  isFinishPlatform: 0
-  isCheckpoint: 0
+  PlatformType: 3
 --- !u!1 &3190719282463038413
 GameObject:
   m_ObjectHideFlags: 0

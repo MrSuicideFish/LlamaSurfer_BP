@@ -228,7 +228,7 @@ public class LevelEditorWindow : EditorWindow
     private void ReloadPlatformRepo()
     {
         _platformRepo = Resources.LoadAll<Platform>("Level/Platforms")
-            .Where(x => !x.isStartPlatform && !x.isFinishPlatform).ToArray();
+            .Where(x => x.PlatformType == Platform.EPlatformType.Normal || x.PlatformType == Platform.EPlatformType.Checkpoint).ToArray();
         _platformThumbnails = new Texture2D[_platformRepo.Length];
         for (int i = 0; i < _platformRepo.Length; i++)
         {
