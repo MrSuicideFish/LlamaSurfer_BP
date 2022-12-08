@@ -1,9 +1,6 @@
-using System;
 using System.Linq;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class LevelEditorWindow : EditorWindow
 {
@@ -73,6 +70,7 @@ public class LevelEditorWindow : EditorWindow
 
     private void OnEnable()
     {
+        
         OnRebuildTrack = new LevelEditorEvent();
         OnBuildModeChanged = new LevelEditorEvent<EBuildMode>();
         OnEraseAllEntities = new LevelEditorEvent();
@@ -153,6 +151,8 @@ public class LevelEditorWindow : EditorWindow
             if (GUILayout.Button(EditorGUIUtility.IconContent("d_Refresh@2x"),
                     GUILayout.Height(64), GUILayout.Width(150)))
             {
+                ReloadPlatformRepo();
+                ReloadObjectRepo();
                 if (OnRebuildTrack != null)
                 {
                     OnRebuildTrack.Invoke();
@@ -174,19 +174,27 @@ public class LevelEditorWindow : EditorWindow
         }
         
         GUILayout.Space(15);
-        using (new GUILayout.ScrollViewScope(_platformViewScrollPos, GUI.skin.box))
+        using (new GUILayout.ScrollViewScope(_platformViewScrollPos, "HelpBox"))
         {
             using (new GUILayout.HorizontalScope())
             {
                 for (int i = 0; i < _platformRepo.Length; i++)
                 {
-                    if (GUILayout.Button(_platformThumbnails[i], GUILayout.Width(100), GUILayout.Height(100)))
+                    Platform p = _platformRepo[i];
+                    using (new GUILayout.VerticalScope())
                     {
-                        if (OnAddPlatform != null)
+                        if (GUILayout.Button(_platformThumbnails[i], GUILayout.Width(100), GUILayout.Height(100)))
                         {
-                            OnAddPlatform.Invoke(_platformRepo[i]);
+                            if (OnAddPlatform != null)
+                            {
+                                OnAddPlatform.Invoke(p);
+                            }
                         }
+
+                        string platformName = p.gameObject.name;
+                        GUILayout.Label(platformName);
                     }
+
                 }
             }
         }
@@ -220,7 +228,7 @@ public class LevelEditorWindow : EditorWindow
     private void ReloadPlatformRepo()
     {
         _platformRepo = Resources.LoadAll<Platform>("Level/Platforms")
-            .Where(x => !x.isStartPlatform && !x.isFinishPlatform).ToArray();
+            .Where(x => x.PlatformType == Platform.EPlatformType.Normal || x.PlatformType == Platform.EPlatformType.Checkpoint).ToArray();
         _platformThumbnails = new Texture2D[_platformRepo.Length];
         for (int i = 0; i < _platformRepo.Length; i++)
         {

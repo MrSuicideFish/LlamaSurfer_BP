@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.EditorTools;
-using UnityEditor.Overlays;
 using UnityEditor.SceneManagement;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
+using UnityEngine.Splines;
 using Object = UnityEngine.Object;
 
 public enum EPaintMode
@@ -51,14 +48,14 @@ public class LevelEditor : EditorTool
 
     public override void OnActivated()
     {
+        if (!GameSystem.GetTrackController() == null) return;
         if (Application.isPlaying) return;
-        if (GameSystem.GetTrackController().TrackCount == 0)
+        if (TrackCount == 0)
         {
             BuildStartPlatform();
             BuildFinishPlatform();
         }
         
-        Rebuild();
         SceneView.lastActiveSceneView?.ShowNotification(new GUIContent("Entering Level Editor"), .1f);
 
         playerXPosition = Mathf.Clamp01(GameSystem.GetPlayer().moveX);
@@ -67,10 +64,9 @@ public class LevelEditor : EditorTool
         // initialize editor window
         _editorWindow = EditorWindow.GetWindow<LevelEditorWindow>(desiredDockNextTo: inspectorType);
         _editorWindow.OnEraseAllEntities.AddListener(GetObjectLayer().EraseAll);
-        _editorWindow.OnRebuildTrack.AddListener(Rebuild);
         _editorWindow.OnPaintEntityChanged.AddListener((obj) => { _objectToPaint = obj; });
         _editorWindow.OnAddPlatform.AddListener(BuildNextPlatform);
-        _editorWindow.OnDeletePlatform.AddListener(RemoveLastPlatform);
+        _editorWindow.OnDeletePlatform.AddListener(RemoveLast);
 
         
         Color timelineColor = new Color();
@@ -128,7 +124,8 @@ public class LevelEditor : EditorTool
 
     public override void OnToolGUI(EditorWindow window)
     {
-        if (!(window is SceneView sceneView))
+        if (!(window is SceneView sceneView)
+            || !GameSystem.GetTrackController() == null)
             return;
 
         if (_playerX_Slider == null
@@ -188,7 +185,7 @@ public class LevelEditor : EditorTool
             
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(GameSystem.GetTrackController().GetPlatformContainer(), "change platforms");
+                Undo.RecordObject(GetPlatformContainer(), "change platforms");
                 Undo.RecordObject(GameSystem.GetTrackController(), "change track");
             }
         }
@@ -269,85 +266,324 @@ public class LevelEditor : EditorTool
     #region Platforms
     public void BuildStartPlatform()
     {
-        const string startPlatformPath = "Level/Platforms/Platform_Start";
-        Object platformRes = Resources.Load<Platform>(startPlatformPath);
-        if (platformRes != null)
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
         {
-            Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-            GameSystem.GetTrackController().AddStartPlatform(p);
-            Rebuild();
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            const string startPlatformPath = "Level/Platforms/Platform_Start";
+            Object resource = Resources.Load<Platform>(startPlatformPath);
+            if (resource != null)
+            {
+                Platform startPlatform = PrefabUtility.InstantiatePrefab(resource) as Platform;
+                AddPlatform(startPlatform);
+            }
         }
     }
 
     public void BuildFinishPlatform()
     {
-        const string startPlatformPath = "Level/Platforms/Platform_Finish";
-        Object platformRes = Resources.Load<Platform>(startPlatformPath);
-        if (platformRes != null)
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
         {
-            Platform p = PrefabUtility.InstantiatePrefab(platformRes) as Platform;
-            GameSystem.GetTrackController().AddFinishPlatform(p);
-            Rebuild();
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            const string finishPlatformPath = "Level/Platforms/Platform_Finish";
+            Object resource = Resources.Load<Platform>(finishPlatformPath);
+            if (resource != null)
+            {
+                Platform finishPlatform = PrefabUtility.InstantiatePrefab(resource) as Platform;
+                AddPlatform(finishPlatform);
+            }
         }
     }
     
-    public void BuildNextPlatform(Platform platform)
+    public void BuildNextPlatform(Platform resource)
     {
-        Platform newPlatform = PrefabUtility.InstantiatePrefab(platform) as Platform;
-        if (newPlatform != null)
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
         {
-            GameSystem.GetTrackController().AddPlatform(newPlatform);
-            Rebuild();
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-        }
-    }
-
-    public void RemoveLastPlatform()
-    {
-        GameSystem.GetTrackController().RemoveLast();
-        Rebuild();
-        EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-    }
-    #endregion
-
-    private void Rebuild()
-    {
-        GameSystem.GetTrackController().ClearTrackNodes();
-        
-        for (int i = 0; i < GameSystem.GetTrackController()._platforms.Count; i++)
-        {
-            Platform platform = GameSystem.GetTrackController()._platforms[i];
-            
-            if (platform != null)
+            Platform newPlatform = PrefabUtility.InstantiatePrefab(resource) as Platform;
+            if (newPlatform != null)
             {
-                Vector3 lastPos = Vector3.zero;
-                Vector3 currentPos = Vector3.zero;
-                Vector3 nextPos = Vector3.zero;
-                Quaternion currentRotation = Quaternion.identity;
-
-                for (int j = 0; j < platform.trackPoints.Length; j++)
-                {
-                    Transform currentTP = platform.trackPoints[j];
-                    bool isLast = (j == platform.trackPoints.Length - 1);
-                
-                    // current
-                    currentPos = currentTP.position;
-                    currentRotation = currentTP.rotation;
-                
-                    // last/next
-                    nextPos = !isLast ? platform.trackPoints[j + 1].position : currentPos;
-                    lastPos = (j - 1 >= 0) ? platform.trackPoints[j - 1].position : currentPos;
-
-                    TrackNodeInfo newTrackNode = new TrackNodeInfo(
-                        currentPos, currentRotation, float3.zero, float3.zero);
-                    GameSystem.GetTrackController().AddTrackNode(newTrackNode);
-                }   
+                AddPlatform(newPlatform);
             }
         }
     }
 
+
+    private Transform _platformContainer;
+    public Transform GetPlatformContainer()
+    {
+        if (_platformContainer == null)
+        {
+            GameObject existing = GameObject.FindGameObjectWithTag("PlatformContainer");
+            if (existing != null)
+            {
+                _platformContainer = existing.transform;
+            }
+            else
+            {
+                _platformContainer = new GameObject("_PLATFORMS").transform;
+                _platformContainer.gameObject.tag = "PlatformContainer";
+            }
+        }
+
+        return _platformContainer;
+    }
+
+    public void AddPlatform(Platform newPlatform)
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            if (track._platforms == null)
+            {
+                track._platforms = new List<TrackNodeInfo>();
+            }
+
+            Platform lastPlatform = null;
+            TrackNodeInfo newNode = new TrackNodeInfo();
+            newNode.platform = newPlatform;
+            newNode.isCheckpoint = newPlatform.PlatformType == Platform.EPlatformType.Checkpoint;
+            newPlatform.transform.SetParent(GetPlatformContainer());
+            
+            switch (newPlatform.PlatformType)
+            {
+                case Platform.EPlatformType.Start:
+                    newPlatform.transform.position = GetPlatformContainer().position;
+                    newPlatform.transform.forward = GetPlatformContainer().forward;
+                    newNode.time = 0.0f;
+                    track._startPlatform = newNode;
+                    track._platforms.Add(newNode);
+                    track.spline.Spline.Clear();
+                    AppendPlatformKnots(newPlatform);
+                    break;
+                case Platform.EPlatformType.Finish:
+                    lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
+                    newPlatform.transform.position = lastPlatform.platformExit.position;
+                    newPlatform.transform.forward = lastPlatform.platformExit.forward;
+                    newNode.time = 1.0f;
+                    track._finishPlatform = newNode;
+                    track._platforms.Add(newNode);
+                    AppendPlatformKnots(newPlatform);
+                    break;
+                default:
+                    lastPlatform = track._platforms[GetLastPlatformIndex()].platform;
+                    RemoveFinishPlatform();
+                    newPlatform.transform.position = lastPlatform.platformExit.position;
+                    newPlatform.transform.forward = lastPlatform.platformExit.forward;
+                    AppendPlatformKnots(newPlatform);
+                    track._platforms.Add(newNode);
+                    BuildFinishPlatform();
+                    break;
+            }
+            
+            ValidateNodeTime();
+        }
+    }
+
+    private void OnValidate()
+    {
+        ValidateNodeTime();
+    }
+
+    private void ValidateNodeTime()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            for (int i = 0; i < track._platforms.Count; i++)
+            {
+                TrackNodeInfo node = track._platforms[i];
+                node.time = track.GetTrackTimeByPosition(node.platform.trackPoints[0].position);
+            }
+        }
+
+    }
+
+    public int GetLastPlatformIndex()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        int result = 0;
+        for (int i = track._platforms.Count - 1; i >= 0; i--)
+        {
+            if (track._platforms[i] != null && track._platforms[i].platform.PlatformType != Platform.EPlatformType.Finish)
+            {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private int GetFinishPlatformIndex()
+    {
+        int result = 0;
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            for (int i = 0; i < track._platforms.Count; i++)
+            {
+                if (track._platforms[i] != null
+                    && track._platforms[i].platform.PlatformType == Platform.EPlatformType.Finish)
+                {
+                    result = i;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public void RemoveLast()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track._platforms == null || TrackCount == 0 
+                                     || TrackCount <= 2
+                                    || track._startPlatform == null 
+                                    || track._finishPlatform == null)
+        {
+            return;
+        }
+
+        int last = GetLastPlatformIndex();
+        TrackNodeInfo lastNode = track._platforms[last];
+        if (lastNode != null)
+        {
+            RemovePlatformKnots(lastNode.platform);
+            DestroyImmediate(lastNode.platform.gameObject);
+            track._platforms.RemoveAt(last);
+            
+            RemoveFinishPlatform();
+            BuildFinishPlatform();
+        }
+    }
+
+    private void RemoveFinishPlatform()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            if (track._platforms.Count < 2 
+                || track._startPlatform == null 
+                || track._finishPlatform == null)
+            {
+                return;
+            }
+
+            int finishNodeIdx = GetFinishPlatformIndex();
+            TrackNodeInfo finishNode = track._platforms[finishNodeIdx];
+            if (finishNode != null)
+            {
+                // remove finish platform
+                RemovePlatformKnots(track._finishPlatform.platform);
+                DestroyImmediate(track._finishPlatform.platform.gameObject);
+                track._platforms.RemoveAt(finishNodeIdx);
+                track._finishPlatform = null;
+            }
+        }
+    }
+    
+    private void RemovePlatformKnots(Platform platform)
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            for (int i = 0; i < platform.trackPoints.Length; i++)
+            {
+                Transform point = platform.trackPoints[i];
+                BezierKnot knot = new BezierKnot()
+                {
+                    Position = point.position,
+                    Rotation = point.rotation
+                };
+                track.spline.Spline.Remove(knot);
+            }
+        }
+    }
+    
+    private void AppendPlatformKnots(Platform platform)
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            for (int i = 0; i < platform.trackPoints.Length; i++)
+            {
+                Transform point = platform.trackPoints[i];
+                BezierKnot knot = new BezierKnot()
+                {
+                    Position = point.position,
+                    Rotation = point.rotation
+                };
+                track.spline.Spline.Add(knot);
+            }
+        }
+    }
+
+    private void ClearAllTrackKnots()
+    {
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            track.spline.Spline.Clear();
+        }
+    }
+    #endregion
+
+
+    #region Entity
+    private void AddWorldObject(Vector3 position, Vector3 rotation)
+    {
+        if (_objectToPaint != null)
+        {
+            string id = _objectToPaint.gameObject.name;
+            WorldObjectBase newObj = PrefabUtility.InstantiatePrefab(_objectToPaint) as WorldObjectBase;
+            if (newObj != null)
+            {
+                newObj.transform.position = position;
+                newObj.transform.eulerAngles = rotation;
+                GetObjectLayer().AddObject(position, newObj);
+            }
+        }
+    }
+
+    private void StackWorldObject(Vector3 position, Vector3 rotation)
+    {
+        List<WorldObjectBase> objs = new List<WorldObjectBase>();
+        GetObjectLayer().GetObjectsAtPosition(position, ref objs);
+        
+        if (_objectToPaint != null)
+        {
+            if (objs.Count == 0)
+            {
+                AddWorldObject(position, rotation);
+                return;
+            }
+            
+            string id = _objectToPaint.gameObject.name;
+            WorldObjectBase newObj = PrefabUtility.InstantiatePrefab(_objectToPaint) as WorldObjectBase;
+            if (newObj != null)
+            {
+                var pos = position;
+                pos.y += objs.Count;
+                newObj.transform.position = pos;
+                newObj.transform.eulerAngles = rotation;
+                GetObjectLayer().AddObject(position, newObj);
+            }
+        }
+    }
+
+    private void RemoveWorldObject(Vector3 position)
+    {
+        GetObjectLayer().RemoveObject(position);
+    }
+
+    private bool ObjectExistsAtPosition(Vector3 position)
+    {
+        List<WorldObjectBase> objsAtPos = null;
+        GetObjectLayer().GetObjectsAtPosition(position, ref objsAtPos);
+        return objsAtPos != null && objsAtPos.Count > 0;
+    }
+    #endregion
+    
+    
     private void HandleMouseControl(SceneView sceneView)
     {
         if (BuildMode != EBuildMode.Entity) return;
@@ -413,61 +649,6 @@ public class LevelEditor : EditorTool
 
         return GameSystem.GetTrackController()._grid.GetCellCenterWorld(samplePosInt);
     }
-
-    #region Entity
-    private void AddWorldObject(Vector3 position, Vector3 rotation)
-    {
-        if (_objectToPaint != null)
-        {
-            string id = _objectToPaint.gameObject.name;
-            WorldObjectBase newObj = PrefabUtility.InstantiatePrefab(_objectToPaint) as WorldObjectBase;
-            if (newObj != null)
-            {
-                newObj.transform.position = position;
-                newObj.transform.eulerAngles = rotation;
-                GetObjectLayer().AddObject(position, newObj);
-            }
-        }
-    }
-
-    private void StackWorldObject(Vector3 position, Vector3 rotation)
-    {
-        List<WorldObjectBase> objs = new List<WorldObjectBase>();
-        GetObjectLayer().GetObjectsAtPosition(position, ref objs);
-        
-        if (_objectToPaint != null)
-        {
-            if (objs.Count == 0)
-            {
-                AddWorldObject(position, rotation);
-                return;
-            }
-            
-            string id = _objectToPaint.gameObject.name;
-            WorldObjectBase newObj = PrefabUtility.InstantiatePrefab(_objectToPaint) as WorldObjectBase;
-            if (newObj != null)
-            {
-                var pos = position;
-                pos.y += objs.Count;
-                newObj.transform.position = pos;
-                newObj.transform.eulerAngles = rotation;
-                GetObjectLayer().AddObject(position, newObj);
-            }
-        }
-    }
-
-    private void RemoveWorldObject(Vector3 position)
-    {
-        GetObjectLayer().RemoveObject(position);
-    }
-
-    private bool ObjectExistsAtPosition(Vector3 position)
-    {
-        List<WorldObjectBase> objsAtPos = null;
-        GetObjectLayer().GetObjectsAtPosition(position, ref objsAtPos);
-        return objsAtPos != null && objsAtPos.Count > 0;
-    }
-    #endregion
     
     public static void TeleportSceneCamera(Vector3 cam_position, Vector3 cam_forward)
     {
@@ -487,6 +668,14 @@ public class LevelEditor : EditorTool
             target.transform.position = cam_position;
             target.transform.rotation = Quaternion.LookRotation(cam_forward);
             scene_view.AlignViewToObject(target.transform);
+        }
+    }
+    
+    public int TrackCount
+    {
+        get
+        {
+            return GetPlatformContainer().childCount;
         }
     }
 }

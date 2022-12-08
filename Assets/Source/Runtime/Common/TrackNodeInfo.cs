@@ -1,20 +1,17 @@
-﻿using UnityEngine;
-using float3 = Unity.Mathematics.float3;
+﻿using System;
+using UnityEngine;
 
-public struct TrackNodeInfo
+[Serializable]
+public class TrackNodeInfo
 {
-    public Vector3 position;
-    public float3 tangentIn;
-    public float3 tangentOut;
-    public Quaternion rotation;
+    public float time;
+    public bool isCheckpoint;
 
-    public TrackNodeInfo(Vector3 pos, Quaternion rot, float3 tangentIn, float3 tangentOut)
+    public Platform platform;
+    
+    public TrackNodeInfo(){}
+    public TrackNodeInfo(Platform _platform)
     {
-        position = pos;
-        rotation = rot;
-        
-        this.tangentIn = tangentIn;
-        this.tangentOut = tangentOut;
-
+        platform = _platform;
     }
 }

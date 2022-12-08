@@ -20,6 +20,17 @@ public class GameManager : MonoBehaviour
 
         GameUIManager.Instance.RebuildUI();
         GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.PreGame);
+        
+        // try get last checkpoint
+        float lastCheckpoint = PlayerPrefs.GetFloat(LastCheckpointKey, -1.0f);
+        if (lastCheckpoint > 0)
+        {
+            GameSystem.GetTrackController().SetTrackTime(lastCheckpoint);
+        }
+        else
+        {
+            GameSystem.GetTrackController().SetTrackTime(0.0f);
+        }
     }
 
     private void OnTrackEnded()
@@ -29,7 +40,6 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        GameSystem.GetTrackController().SetTrackTime(0.0f);
         GameSystem.GetTrackController().Play();
         gameHasStarted = true;
         GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Game);
@@ -42,6 +52,7 @@ public class GameManager : MonoBehaviour
         if (isWin)
         {
             playerHasFailed = false;
+            ClearCheckpoint();
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSuccess);
         }
         else
@@ -49,6 +60,19 @@ public class GameManager : MonoBehaviour
             playerHasFailed = true;
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameFail);
         }
+    }
+
+    private const string LastCheckpointKey = "LastCheckpoint";
+    public void AddCheckpoint(float time)
+    {
+        //const string checkpoint
+        PlayerPrefs.SetFloat(LastCheckpointKey, time);
+        Debug.Log($"Added checkpoint at time: {time}");
+    }
+
+    public void ClearCheckpoint()
+    {
+        PlayerPrefs.DeleteKey(LastCheckpointKey);
     }
 
     public void AddPoints(int amount)

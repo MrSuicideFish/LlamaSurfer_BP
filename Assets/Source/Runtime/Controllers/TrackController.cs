@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Splines;
+
 
 [ExecuteAlways]
 public class TrackController : MonoBehaviour
@@ -15,10 +17,10 @@ public class TrackController : MonoBehaviour
     public Grid _grid;
     
     // platforms
-    public List<Platform> _platforms;
-    public Platform _startPlatform;
-    public Platform _finishPlatform;
-    
+    public List<TrackNodeInfo> _platforms;
+    public TrackNodeInfo _startPlatform;
+    public TrackNodeInfo _finishPlatform;
+
     public UnityEvent OnTrackStart;
     public UnityEvent OnTrackEnd;
     
@@ -26,6 +28,19 @@ public class TrackController : MonoBehaviour
     private Vector3 _trackPosition = Vector3.zero;
     private Vector3 _trackTangent = Vector3.zero;
     private Vector3 _trackWorldUp = Vector3.zero;
+    
+    public int TrackCount
+    {
+        get
+        {
+            if (_platforms == null)
+            {
+                return 0;
+            }
+            
+            return _platforms.Count;
+        }
+    }
 
     // playback
     private float _trackTime;
@@ -69,16 +84,6 @@ public class TrackController : MonoBehaviour
             spline.Spline.Add(new BezierKnot(
                 float3.zero, float3.zero, float3.zero, Quaternion.identity));
         }
-
-#if UNITY_EDITOR
-        if (_platforms == null || _platforms.Count == 0)
-        {
-            _platforms = new List<Platform>(
-                GetPlatformContainer().GetComponentsInChildren<Platform>());
-        }
-        
-        MoveFinishPlatformToEnd();
-#endif
     }
 
     private Vector3 _pathTargetMoveVel;
@@ -127,9 +132,20 @@ public class TrackController : MonoBehaviour
         SetTrackTime(TrackTime + amount);
     }
 
+    private int checkpointQueryIndex = 0;
     private void Step()
     {
         TrackTime += (1.0f / spline.Spline.GetLength()) * GameProperties.Get().trackPlaybackSpeed * Time.deltaTime;
+
+        if (checkpointQueryIndex < Checkpoints.Length)
+        {
+            if (TrackTime > Checkpoints[checkpointQueryIndex])
+            {
+                GameSystem.GetGameManager().AddCheckpoint(Checkpoints[checkpointQueryIndex]);
+                checkpointQueryIndex++;
+            }
+        }
+
         if (TrackTime >= MAX_TRACK_POSITION)
         {
             End();
@@ -150,6 +166,35 @@ public class TrackController : MonoBehaviour
             {
                 OnTrackEnd?.Invoke();
             }
+        }
+    }
+
+    private float[] _checkpoints;
+
+    public float[] Checkpoints
+    {
+        get
+        {
+            if (_platforms != null)
+            {
+                if (_checkpoints == null)
+                {
+                    List<float> c = new List<float>();
+                    for (int i = 0; i < _platforms.Count; i++)
+                    {
+                        if (_platforms[i].platform.PlatformType == Platform.EPlatformType.Checkpoint)
+                        {
+                            c.Add(_platforms[i].time);
+                        }
+                    }
+
+                    _checkpoints = c.ToArray();
+                }
+
+                return _checkpoints;
+            }
+
+            return Array.Empty<float>();
         }
     }
 
@@ -178,178 +223,16 @@ public class TrackController : MonoBehaviour
     {
         return _trackWorldUp;
     }
+    
+    public float GetTrackTimeByPosition(Vector3 position, float threshold = 0.5f)
+    {
+        float3 nearestVec;
+        float nearestT;
+        SplineUtility.GetNearestPoint(spline.Spline, position, out nearestVec, out nearestT);
+        return nearestT;
+    }
 
-    
-    
 #if UNITY_EDITOR
-    public int TrackCount
-    {
-        get
-        {
-            return GetPlatformContainer().childCount;
-        }
-    }
-    
-    public void OnValidate()
-    {
-        /*
-        for (int i = 0; i < _platforms.Count; i++)
-        {
-            if (_platforms[i] == null)
-            {
-                _platforms.RemoveAt(i);
-            }
-        }*/
-
-        MoveFinishPlatformToEnd();
-    }
-    
-    private Transform _platformContainer;
-    public Transform GetPlatformContainer()
-    {
-        if (_platformContainer == null)
-        {
-            GameObject existing = GameObject.FindGameObjectWithTag("PlatformContainer");
-            if (existing != null)
-            {
-                _platformContainer = existing.transform;
-            }
-            else
-            {
-                _platformContainer = new GameObject("_PLATFORMS").transform;
-                _platformContainer.gameObject.tag = "PlatformContainer";
-            }
-        }
-
-        return _platformContainer;
-    }
-    
-    public void AddStartPlatform(Platform newPlatform)
-    {
-        if (_startPlatform != null)
-        {
-            return;
-        }
-        
-        newPlatform.transform.position = Vector3.zero;
-        newPlatform.transform.forward = Vector3.forward;
-        _platforms.Add(newPlatform);
-        
-        newPlatform.transform.SetParent(GetPlatformContainer());
-        _startPlatform = newPlatform;
-    }
-
-    public void AddFinishPlatform(Platform newPlatform)
-    {
-        if (_finishPlatform != null)
-        {
-            return;
-        }
-
-        Platform lastPlatform = _platforms[GetLastPlatformIndex()];
-        if (lastPlatform != null)
-        {
-            newPlatform.transform.position = lastPlatform.platformExit.position;
-            newPlatform.transform.forward = lastPlatform.platformExit.forward;
-        }
-
-        newPlatform.transform.SetParent(GetPlatformContainer());
-        _platforms.Add(newPlatform);
-        _finishPlatform = newPlatform;
-    }
-
-    public void AddPlatform(Platform newPlatform)
-    {
-        Platform lastPlatform = _platforms[GetLastPlatformIndex()];
-        newPlatform.transform.position = lastPlatform.platformExit.position;
-        newPlatform.transform.forward = lastPlatform.platformExit.forward;
-        newPlatform.transform.SetParent(GetPlatformContainer());
-        _platforms.Add(newPlatform);
-        
-        MoveFinishPlatformToEnd();
-    }
-
-    public int GetLastPlatformIndex()
-    {
-        int result = 0;
-        for (int i = _platforms.Count - 1; i >= 0; i--)
-        {
-            if (_platforms[i] != null && !_platforms[i].isFinishPlatform)
-            {
-                result = i;
-                break;
-            }
-        }
-        return result;
-    }
-
-    private int GetFinishPlatformIndex()
-    {
-        int result = 0;
-        for (int i = 0; i < _platforms.Count; i++)
-        {
-            if (_platforms[i] != null && _platforms[i].isFinishPlatform)
-            {
-                result = i;
-                break;
-            }
-        }
-        return result;
-    }
-
-    public void RemoveLast()
-    {
-        if (_platforms == null || TrackCount == 0 
-                               || _startPlatform == null 
-                               || _finishPlatform == null)
-        {
-            return;
-        }
-
-        if (_platforms.Count <= 2)
-        {
-            MoveFinishPlatformToEnd();
-            return;
-        }
-
-        int last = GetLastPlatformIndex();
-        GameObject.DestroyImmediate(_platforms[last].gameObject);
-        _platforms.RemoveAt(last);
-        MoveFinishPlatformToEnd();
-    }
-
-    private void MoveFinishPlatformToEnd()
-    {
-        if (_platforms.Count <= 2 || _startPlatform == null || _finishPlatform == null)
-        {
-            return;
-        }
-        
-        Platform lastPlatform = _platforms[GetLastPlatformIndex()];
-        if (lastPlatform != null)
-        {
-            _finishPlatform.transform.position = lastPlatform.platformExit.position;
-            _finishPlatform.transform.forward = lastPlatform.platformExit.forward;
-
-            _platforms.RemoveAt(GetFinishPlatformIndex());
-            _platforms.Add(_finishPlatform);
-            _finishPlatform.transform.SetAsLastSibling();
-        }
-    }
-
-    public void AddTrackNode(TrackNodeInfo info)
-    {
-        BezierKnot knot = new BezierKnot(
-            info.position, info.tangentIn, 
-            info.tangentOut, info.rotation); 
-        spline.Spline.Add(knot);
-    }
-
-    public void ClearTrackNodes()
-    {
-        spline.Spline.Clear();
-    }
-    
     private void OnDrawGizmos()
     {
         // Ensure continuous Update calls.
