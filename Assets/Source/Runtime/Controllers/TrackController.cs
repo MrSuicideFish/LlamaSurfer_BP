@@ -159,6 +159,15 @@ public class TrackController : MonoBehaviour
         }
     }
 
+    public float[] GetCheckpoints()
+    {
+        if (_checkpoints == null)
+        {
+            _checkpoints = Array.Empty<float>();
+        }
+        return _checkpoints;
+    }
+
     public Vector3 GetTrackPositionAt(float time)
     {
         Vector3 result = spline.EvaluatePosition(time);
@@ -192,7 +201,6 @@ public class TrackController : MonoBehaviour
         SplineUtility.GetNearestPoint(spline.Spline, position, out nearestVec, out nearestT);
         return nearestT;
     }
-
 
 #if UNITY_EDITOR
     private void OnDrawGizmos()
