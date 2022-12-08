@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameApplicationHandle : MonoBehaviour
@@ -24,7 +23,6 @@ public class GameApplicationHandle : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void OnApplicationStart()
     {
-        Debug.Log("Application Handle Loaded");
         PlayerData.Load();
     }
 
