@@ -23,6 +23,7 @@ public class GameApplicationHandle : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void OnApplicationStart()
     {
+        PlayerPrefs.DeleteAll();
         PlayerData.Load();
     }
 

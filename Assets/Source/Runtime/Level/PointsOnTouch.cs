@@ -1,16 +1,21 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class PointsOnTouch : WorldObjectBase
 {
+    public Animation animation;
+    
     public void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             GameSystem.GetGameManager().AddPoints(value);
-            this.gameObject.SetActive(false);
+            animation.Play("carrot_collect");
         }
+    }
+
+    public void OnCollectComplete()
+    {
+        this.gameObject.SetActive(false);
     }
 }

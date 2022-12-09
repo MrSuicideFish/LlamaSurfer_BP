@@ -13,6 +13,7 @@ public class PlayerData
         public const string LastLogin = "LastLogin";
         public const string HeartCount = "numOfHearts";
         public const string BonusSurBlocks = "bonusBlocks";
+        public const string LastCheckpoint = "LastCheckpoint";
     }
 
     private static PlayerData _loadedPlayerData = new PlayerData();
