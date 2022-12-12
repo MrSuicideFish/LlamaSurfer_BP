@@ -1,0 +1,874 @@
+fileFormatVersion: 2
+guid: 3f6de74b2ebe93649ba33d382e9cf617
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 11
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: uisheet_7
+      rect:
+        serializedVersion: 2
+        x: 1031
+        y: 748
+        width: 309
+        height: 153
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 29, y: 35, z: 23, w: 25}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad6455322cdba8e4b9ef9f186c084d28
+      internalID: 2038354633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_10
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 469
+        width: 640
+        height: 395
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 50, y: 81, z: 42, w: 54}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9dd1b8e07df5e3c409d839b7b2748d88
+      internalID: 1374926681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_11
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 772
+        width: 125
+        height: 122
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 7, y: 5, z: 6, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5ffd58fce05e1004188ae00d057a4ec9
+      internalID: -1943878118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_12
+      rect:
+        serializedVersion: 2
+        x: 848
+        y: 776
+        width: 121
+        height: 119
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 22, y: 19, z: 24, w: 21}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c584105962b2e04bb0a89f61263ada0
+      internalID: 1151573000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_13
+      rect:
+        serializedVersion: 2
+        x: 1377
+        y: 791
+        width: 378
+        height: 99
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 703ef1bf26d304d46b61e28ff764b800
+      internalID: -2117395768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_15
+      rect:
+        serializedVersion: 2
+        x: 1854
+        y: 692
+        width: 201
+        height: 185
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ce0bd19d33f036d4a9ed59ee24ca80d2
+      internalID: 1264202247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_29
+      rect:
+        serializedVersion: 2
+        x: 1399
+        y: 597
+        width: 404
+        height: 181
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 198, y: 35, z: 51, w: 76}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 030c2cc5d65b2ff4e81a0aa12cb74a91
+      internalID: 41739593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_34
+      rect:
+        serializedVersion: 2
+        x: 687
+        y: 653
+        width: 115
+        height: 113
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c9732f35ad9b552468ef509067e5c0f9
+      internalID: 1092282030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_35
+      rect:
+        serializedVersion: 2
+        x: 848
+        y: 651
+        width: 114
+        height: 114
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 360ea2087025f1247aafc0e7f0936385
+      internalID: -1972615564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_36
+      rect:
+        serializedVersion: 2
+        x: 1033
+        y: 577
+        width: 308
+        height: 159
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 21, y: 18, z: 16, w: 17}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0ddc75729602514a9689af61bed634e
+      internalID: 328761997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_44
+      rect:
+        serializedVersion: 2
+        x: 1852
+        y: 431
+        width: 226
+        height: 252
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a381cb4c966a74c4eb862492366e729d
+      internalID: 1124595086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_49
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 537
+        width: 81
+        height: 93
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d0871bea043dcd4dbe0df10dafe6558
+      internalID: -1118086709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_50
+      rect:
+        serializedVersion: 2
+        x: 775
+        y: 519
+        width: 113
+        height: 111
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 16c626a6b39dd374db98eff84bd01b2e
+      internalID: 1014568115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_51
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 524
+        width: 111
+        height: 106
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5011e1791d3b4b345876f04dbcf1be29
+      internalID: -1815934950
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_66
+      rect:
+        serializedVersion: 2
+        x: 1058
+        y: 532
+        width: 377
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 60da1e43a5796e9488e7e53120a8dcce
+      internalID: -2023320290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_68
+      rect:
+        serializedVersion: 2
+        x: 1444
+        y: 406
+        width: 153
+        height: 147
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a01bd7abdb3c1f54ebef1bef5c6b7879
+      internalID: -1232678676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_75
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 485
+        width: 627
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d61036d6d9d59914789bf508c4487b47
+      internalID: 344558059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_77
+      rect:
+        serializedVersion: 2
+        x: 678
+        y: 432
+        width: 641
+        height: 37
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97e5a51eb4895314891ed9d4a6a2a4ff
+      internalID: -1496552100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_80
+      rect:
+        serializedVersion: 2
+        x: 680
+        y: 19
+        width: 642
+        height: 401
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 17, y: 25, z: 19, w: 18}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9036e76143841e54da0b0d60b9bf504e
+      internalID: -1324978693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_87
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 13
+        width: 644
+        height: 401
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 41, y: 44, z: 38, w: 56}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: abc62220a0d67f04fa5b7ff71d7c31e0
+      internalID: -53595622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_91
+      rect:
+        serializedVersion: 2
+        x: 1386
+        y: 173
+        width: 300
+        height: 197
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 25, y: 69, z: 24, w: 45}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32aded3a533e7fb4ea12fcc0b1743736
+      internalID: -756890097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_100
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 247
+        width: 82
+        height: 111
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 661c3d0ab89bbe54489def78efbea52e
+      internalID: -2032588961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_102
+      rect:
+        serializedVersion: 2
+        x: 1765
+        y: 254
+        width: 58
+        height: 98
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c825dea61b5296043a0215d4e42b13cf
+      internalID: -2111517012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_111
+      rect:
+        serializedVersion: 2
+        x: 1357
+        y: 54
+        width: 78
+        height: 78
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 614bf527b4cb1d44c92336fdd2cdaabc
+      internalID: 918654532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_113
+      rect:
+        serializedVersion: 2
+        x: 1627
+        y: 50
+        width: 96
+        height: 98
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 095876567b93d7941840dbe019cb6464
+      internalID: 2009513955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_114
+      rect:
+        serializedVersion: 2
+        x: 1792
+        y: 58
+        width: 91
+        height: 79
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c17e1755906331745ba0a959243281df
+      internalID: 2103946822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_115
+      rect:
+        serializedVersion: 2
+        x: 1965
+        y: 54
+        width: 86
+        height: 88
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fd1bb19a6819df8449c6f87a8829c2dd
+      internalID: -5167223
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_116
+      rect:
+        serializedVersion: 2
+        x: 1505
+        y: 55
+        width: 81
+        height: 81
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 05befeb592a7fb945838b607332895e9
+      internalID: 1188305747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: uisheet_0
+      rect:
+        serializedVersion: 2
+        x: 1651
+        y: 406
+        width: 153
+        height: 147
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 66102cf6e9ab0da4489b038ec644856f
+      internalID: 1813816933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      uisheet_18: -2035045563
+      uisheet_102: -2111517012
+      uisheet_22: -1247138254
+      uisheet_63: -732970376
+      uisheet_72: -934228553
+      uisheet_3: -1061919166
+      uisheet_6: 529531974
+      uisheet_60: 231728189
+      uisheet_66: -2023320290
+      uisheet_93: 592711286
+      uisheet_49: -1118086709
+      uisheet_15: 1264202247
+      uisheet_45: -800858680
+      uisheet_38: -574954068
+      uisheet_86: 1450574746
+      uisheet_80: -1324978693
+      uisheet_115: -5167223
+      uisheet_8: -1437621409
+      uisheet_32: 2101334301
+      uisheet_74: 617877935
+      uisheet_108: -2063768632
+      uisheet_69: -429946134
+      uisheet_98: 860727266
+      uisheet_10: 1374926681
+      uisheet_64: -919599821
+      uisheet_62: 1426064288
+      uisheet_99: 1783840790
+      uisheet_20: -77920002
+      uisheet_1: -706441266
+      uisheet_36: 328761997
+      uisheet_0: 1813816933
+      uisheet_85: 1472507528
+      uisheet_37: -1852952733
+      uisheet_13: -2117395768
+      uisheet_54: -777890245
+      uisheet_23: 2051285462
+      uisheet_24: 780176227
+      uisheet_106: -1787706125
+      uisheet_91: -756890097
+      uisheet_65: 479157465
+      uisheet_61: -417490577
+      uisheet_42: -185929511
+      uisheet_51: -1815934950
+      uisheet_47: -1848987097
+      uisheet_81: -320765256
+      uisheet_87: -53595622
+      uisheet_46: -2139546732
+      uisheet_96: -1102235323
+      uisheet_109: -343000136
+      uisheet_101: 699773162
+      uisheet_9: 226680420
+      uisheet_21: 828912407
+      uisheet_12: 1151573000
+      uisheet_29: 41739593
+      uisheet_112: -1797175380
+      uisheet_43: -1024752026
+      uisheet_34: 1092282030
+      uisheet_17: 1543739633
+      uisheet_39: 1961365260
+      uisheet_14: -639767000
+      uisheet_92: 378089985
+      uisheet_41: 374124700
+      uisheet_56: 872522414
+      uisheet_58: 1237111480
+      uisheet_67: 2055485826
+      uisheet_71: 1153490406
+      uisheet_44: 1124595086
+      uisheet_4: 870626253
+      uisheet_40: 102210744
+      uisheet_97: 1579147703
+      uisheet_78: 249657249
+      uisheet_107: 268688307
+      uisheet_114: 2103946822
+      uisheet_35: -1972615564
+      uisheet_73: 951968276
+      uisheet_79: 447650660
+      uisheet_68: -1232678676
+      uisheet_110: -698071374
+      uisheet_84: -930318965
+      uisheet_77: -1496552100
+      uisheet_104: 101799315
+      uisheet_94: -1836462302
+      uisheet_57: -1580225272
+      uisheet_117: 1455879160
+      uisheet_70: -1497702067
+      uisheet_100: -2032588961
+      uisheet_59: 512688036
+      uisheet_5: 184700609
+      uisheet_52: 1723359781
+      uisheet_48: -1803596120
+      uisheet_83: 1249908219
+      uisheet_111: 918654532
+      uisheet_27: -1751549585
+      uisheet_75: 344558059
+      uisheet_2: -610713569
+      uisheet_89: 1538818308
+      uisheet_76: -1374531381
+      uisheet_95: 1209470576
+      uisheet_50: 1014568115
+      uisheet_26: 1273325217
+      uisheet_31: 1368852636
+      uisheet_25: -446327660
+      uisheet_28: 1642834758
+      uisheet_113: 2009513955
+      uisheet_19: -2014698966
+      uisheet_11: -1943878118
+      uisheet_90: -360417794
+      uisheet_55: -1447427361
+      uisheet_30: 436354206
+      uisheet_82: -342428819
+      uisheet_33: -2079328537
+      uisheet_53: 1808514839
+      uisheet_103: -2119651351
+      uisheet_116: 1188305747
+      uisheet_105: -1887715660
+      uisheet_16: 2035317803
+      uisheet_88: -679461207
+      uisheet_7: 2038354633
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
