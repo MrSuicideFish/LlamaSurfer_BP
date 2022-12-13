@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd">
+    <ui:VisualElement name="topbox" style="height: 176px;">
+        <ui:VisualElement name="scorecarrot" style="background-image: url(&apos;project://database/Assets/_GAME/UI/uisheet.png?fileID=41739593&amp;guid=3f6de74b2ebe93649ba33d382e9cf617&amp;type=3#uisheet_29&apos;); width: 344px; height: 202px; -unity-background-scale-mode: stretch-to-fill; transform-origin: right; right: auto; left: 70%; top: 3%; max-width: none; max-height: none; min-width: auto; min-height: auto; align-items: stretch;">
+            <ui:Label tabindex="-1" text="123" display-tooltip-when-elided="true" name="carrotcount" style="width: 159px; height: 80px; left: 188px; top: 68px; right: 50px; justify-content: flex-end; align-items: center; -unity-text-align: middle-center; -unity-font-definition: url(&apos;project://database/Assets/_GAME/Fonts/Grandstander-Bold%20SDF%201.asset?fileID=11400000&amp;guid=4b71ae58a1f67bc48b2051958e5a45e7&amp;type=2#Grandstander-Bold SDF 1&apos;); font-size: 48px; color: rgba(0, 0, 0, 255); -unity-text-outline-width: -33px; -unity-text-outline-color: rgba(255, 255, 255, 255);" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
