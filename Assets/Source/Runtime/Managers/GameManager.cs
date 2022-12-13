@@ -12,24 +12,33 @@ public class GameManager : MonoBehaviour
     public bool gameHasEnded { get; private set; }
     public bool playerHasFailed { get; private set; }
 
+    private int startCheckpoint;
+
     public void Start()
     {
-        GameSystem.GetTrackController().OnTrackEnd.RemoveListener(OnTrackEnded);
-        GameSystem.GetTrackController().OnTrackEnd.AddListener(OnTrackEnded);
-        GameSystem.GetTrackController().Restart();
+        TrackController track = GameSystem.GetTrackController();
+        if (track != null)
+        {
+            track.OnTrackEnd.RemoveListener(OnTrackEnded);
+            track.OnTrackEnd.AddListener(OnTrackEnded);
+            track.Restart();
 
-        GameUIManager.Instance.RebuildUI();
-        GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.PreGame);
+            GameUIManager.Instance.RebuildUI();
+            GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.PreGame);
         
-        // try get last checkpoint
-        float lastCheckpoint = PlayerPrefs.GetFloat(PlayerData.DataKey.LastCheckpoint, -1.0f);
-        if (lastCheckpoint > 0)
-        {
-            GameSystem.GetTrackController().SetTrackTime(lastCheckpoint);
-        }
-        else
-        {
-            GameSystem.GetTrackController().SetTrackTime(0.0f);
+            // try get last checkpoint
+            int lastCheckpoint = PlayerPrefs.GetInt(PlayerData.DataKey.LastCheckpoint, 0);
+            if (lastCheckpoint > 0)
+            {
+                float lastCheckpointTime = track.Checkpoints[lastCheckpoint];
+                track.SetTrackTime(lastCheckpointTime);
+                startCheckpoint = lastCheckpoint;
+            }
+            else
+            {
+                startCheckpoint = 0;
+                GameSystem.GetTrackController().SetTrackTime(0.0f);
+            }
         }
     }
 
@@ -43,6 +52,12 @@ public class GameManager : MonoBehaviour
         GameSystem.GetTrackController().Play();
         gameHasStarted = true;
         GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Game);
+        
+        LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
+        if (currentLevel != null)
+        {
+            Analytics.LevelStart(currentLevel.sceneIndex);
+        }
     }
 
     public void EndGame(bool isWin)
@@ -54,19 +69,39 @@ public class GameManager : MonoBehaviour
             playerHasFailed = false;
             ClearCheckpoint();
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSuccess);
+            
+            LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
+            if (currentLevel != null)
+            {
+                Analytics.LevelComplete(currentLevel.sceneIndex, points, currentLevel.maxPoints);
+            }
         }
         else
         {
             playerHasFailed = true;
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameFail);
+            
+            LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
+            if (currentLevel != null)
+            {
+                int checkpoint = PlayerPrefs.GetInt(PlayerData.DataKey.LastCheckpoint, 0);
+                Analytics.LevelFailed(currentLevel.sceneIndex, startCheckpoint, checkpoint, points,
+                    currentLevel.maxPoints);
+            }
         }
     }
     
-    public void AddCheckpoint(float time)
+    public void AddCheckpoint(int checkpointIndex)
     {
         //const string checkpoint
-        PlayerPrefs.SetFloat(PlayerData.DataKey.LastCheckpoint, time);
-        Debug.Log($"Added checkpoint at time: {time}");
+        PlayerPrefs.SetInt(PlayerData.DataKey.LastCheckpoint, checkpointIndex);
+        Debug.Log($"Added checkpoint #{checkpointIndex+1}");
+        
+        LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
+        if (currentLevel != null)
+        {
+            Analytics.CheckpointReached(currentLevel.sceneIndex, checkpointIndex+1);
+        }
     }
 
     public void ClearCheckpoint()
