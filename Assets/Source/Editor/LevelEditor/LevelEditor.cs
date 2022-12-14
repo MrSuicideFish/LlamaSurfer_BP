@@ -7,6 +7,7 @@ using UnityEditor.EditorTools;
 using UnityEditor.SceneManagement;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Splines;
 using Object = UnityEngine.Object;
 
@@ -46,6 +47,11 @@ public class LevelEditor : EditorTool
         }
     }
 
+    public void OnEnable()
+    {
+        InitGUI();
+    }
+
     public override void OnActivated()
     {
         if (!GameSystem.GetTrackController() == null) return;
@@ -67,8 +73,11 @@ public class LevelEditor : EditorTool
         _editorWindow.OnPaintEntityChanged.AddListener((obj) => { _objectToPaint = obj; });
         _editorWindow.OnAddPlatform.AddListener(BuildNextPlatform);
         _editorWindow.OnDeletePlatform.AddListener(RemoveLast);
+        InitGUI();
+    }
 
-        
+    private void InitGUI()
+    {
         Color timelineColor = new Color();
         timelineColor.r = 0.1f;
         timelineColor.g = 0.1f;
@@ -376,12 +385,15 @@ public class LevelEditor : EditorTool
             }
             
             ValidateNodeTime();
+            Scene currentScene = SceneManager.GetActiveScene();
+            EditorSceneManager.MarkSceneDirty(currentScene);
         }
     }
 
     private void OnValidate()
     {
         ValidateNodeTime();
+        InitGUI();
     }
 
     private void ValidateNodeTime()
@@ -526,8 +538,7 @@ public class LevelEditor : EditorTool
         }
     }
     #endregion
-
-
+    
     #region Entity
     private void AddWorldObject(Vector3 position, Vector3 rotation)
     {
@@ -582,8 +593,7 @@ public class LevelEditor : EditorTool
         return objsAtPos != null && objsAtPos.Count > 0;
     }
     #endregion
-    
-    
+
     private void HandleMouseControl(SceneView sceneView)
     {
         if (BuildMode != EBuildMode.Entity) return;

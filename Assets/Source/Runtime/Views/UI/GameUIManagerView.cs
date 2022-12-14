@@ -12,6 +12,8 @@ public class GameUIManagerView : MonoBehaviour
     }
     
     public GameUIView[] screens;
+    public HeaderInGame inGameHeader;
+    public UIControlPanel ControlPanel;
 
     public GameScreenView GetScreenView(GameUIManager.GameScreenID screenId)
     {
@@ -38,6 +40,18 @@ public class GameUIManagerView : MonoBehaviour
         }
     }
 
+    public void HideAllViews()
+    {
+        for (int i = 0; i < screens.Length; i++)
+        {
+            GameUIView view = screens[i];
+            if (view != null && view.view != null)
+            {
+                view.view.gameObject.SetActive(false);
+            }
+        }
+    }
+
     public void GoToNextLevel()
     {
         Debug.Log("Going to next level");
@@ -60,5 +74,20 @@ public class GameUIManagerView : MonoBehaviour
     {
         Debug.Log("Showing options screen");
         ToggleScreenView(GameUIManager.GameScreenID.Options);
+    }
+
+    public void PurchaseNoAds()
+    {
+        
+    }
+
+    public void ToggleControlPanel(bool isOn)
+    {
+        ControlPanel.gameObject.SetActive(isOn);
+    }
+
+    public void ToggleInGameHeader(bool isOn)
+    {
+        inGameHeader.gameObject.SetActive(isOn);
     }
 }
