@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     public bool gameHasEnded { get; private set; }
     public bool playerHasFailed { get; private set; }
 
-    private int startCheckpoint;
+    public int startCheckpoint { get; private set; } = -1;
 
     public void Start()
     {
@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                startCheckpoint = 0;
+                startCheckpoint = -1;
                 GameSystem.GetTrackController().SetTrackTime(0.0f);
             }
         }
@@ -51,7 +51,8 @@ public class GameManager : MonoBehaviour
     {
         GameSystem.GetTrackController().Play();
         gameHasStarted = true;
-        GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Game);
+        GameUIManager.Instance.HideAllScreens();
+        GameUIManager.Instance.ToggleInGameHeader(true);
         
         LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
         if (currentLevel != null)
@@ -79,8 +80,16 @@ public class GameManager : MonoBehaviour
         else
         {
             playerHasFailed = true;
-            GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameFail);
-            
+
+            if (ShouldShowHardDeath())
+            {
+                GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameHardFail);
+            }
+            else
+            {
+                GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSoftFail);
+            }
+
             LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
             if (currentLevel != null)
             {
@@ -107,6 +116,11 @@ public class GameManager : MonoBehaviour
     public void ClearCheckpoint()
     {
         PlayerPrefs.DeleteKey(PlayerData.DataKey.LastCheckpoint);
+    }
+
+    public bool ShouldShowHardDeath()
+    {
+        return PlayerData.GetData<int>(PlayerData.DataKey.HeartCount, 0) == 0;
     }
 
     public void AddPoints(int amount)

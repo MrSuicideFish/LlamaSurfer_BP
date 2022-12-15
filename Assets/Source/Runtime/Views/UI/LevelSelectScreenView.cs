@@ -26,7 +26,14 @@ public class LevelSelectScreenView : GameScreenView
         {
             if (GameSystem.GetGameManager().playerHasFailed)
             {
-                GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameFail);
+                if (GameSystem.GetGameManager().ShouldShowHardDeath())
+                {
+                    GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameHardFail);
+                }
+                else
+                {
+                    GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSoftFail);
+                }
             }
             else
             {

@@ -105,7 +105,7 @@ public class TimelineProgressBar : MonoBehaviour
     {
         if (fill != null && GameSystem.GetTrackController() != null)
         {
-            //fill.fillAmount = GameSystem.GetTrackController().TrackTime / 1.0f;
+            fill.fillAmount = GameSystem.GetTrackController().TrackTime / 1.0f;
         }
     }
 

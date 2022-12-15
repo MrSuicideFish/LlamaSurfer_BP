@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.ComponentModel.Design.Serialization;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -8,65 +9,91 @@ using Image = UnityEngine.UI.Image;
 
 public class LevelCompleteView : GameScreenView
 {
+    [Header("Star sprites")]
+    public Sprite starBrightSprite;
+    public Sprite starDimSprite;
+    
+    [Header("Instance References")]
     public TextMeshProUGUI pointCountText;
     public Image playButton;
-    public RectTransform contentWindow;
-    public Image[] stars;
+    public Image starPrefab;
+    public RectTransform starsContainer;
 
-    private int currentPoints;
-    private int maxPoints;
+    [Header("Star Animation Parameters")] 
+    public float starPunchDuration;
+    public int starPunchStrength;
+    public float starPunchElasticity;
+    public float starPunchDelay;
+    
+    [Header("Point Count Animation Parameters")]
+    public int pointCountDuration;
+    public float pointCountPunchSize;
+    public float pointCountPunchDuration;
+    public int pointCountPunchStrength;
+    public float pointCountPunchElasticity;
 
-    private Tween DoCountPoints()
+    private Image[] stars;
+
+    private void Start()
     {
-        // do points counting
-        currentPoints = 0;
-        int targetPoints = GameSystem.GetGameManager().points;
-        if (LevelCfgDb.GetCurrentLevel() != null)
+        stars = new Image[5];
+        for (int i = 0; i < stars.Length; i++)
         {
-            maxPoints = LevelCfgDb.GetCurrentLevel().maxPoints;
-        }
-        else
-        {
-            maxPoints = 100;
-        }
-
-        return DOTween.To(
-                () => currentPoints, x => currentPoints = x, targetPoints, 1.3f).SetEase(Ease.Linear)
-            .OnComplete(() =>
+            if (i == 0)
             {
-                pointCountText.rectTransform.DOPunchScale(Vector3.one * 1.2f, 0.3f, 1, 0.1f);
-            });
+                stars[i] = starPrefab;
+            }
+            else
+            {
+                stars[i] = GameObject.Instantiate(starPrefab);
+                stars[i].transform.SetParent(starsContainer, false);
+            }
+            stars[i].sprite = starDimSprite;
+        }
     }
 
-    private Tween DoPresentStars(int count)
+    [ContextMenu("Test Animations")]
+    public void Debug_TestAnimation()
+    {
+        DoShowStars(3);
+        DoCountPoints(117, 160);
+    }
+
+    private Tween DoShowStars(int count)
     {
         Sequence seq = DOTween.Sequence();
-        
-        // move all stars to top of screen
-        foreach(Image star in stars)
-        {
-            star.rectTransform.anchoredPosition = contentWindow.rect.position;
-            star.color = new Color(1, 1, 1, 0.0f);
-        }
 
-        if (count > stars.Length)
+        for (int i = 0; i < stars.Length; i++)
         {
-            count = stars.Length;
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            Sequence starSeq = DOTween.Sequence();
-            if (starSeq != null)
+            if (i < count)
             {
-                starSeq.Join(stars[i].DOColor(new Color(1, 1, 1, 1), 0.1f));
-                starSeq.Join(stars[i].rectTransform.DOAnchorPos(new Vector2(0,0), 0.1f));
-                starSeq.Append(stars[i].rectTransform.DOPunchScale(Vector3.one * 1.2f, 0.1f, vibrato: 1, elasticity: 0.1f));
-                seq.Append(starSeq);
+                stars[i].sprite = starBrightSprite;
+                seq.Append(stars[i].transform.DOPunchScale(Vector3.one * 3, starPunchDuration, starPunchStrength,
+                    starPunchElasticity)).SetDelay(starPunchDelay);
+            }
+            else
+            {
+                stars[i].sprite = starDimSprite;
             }
         }
-        
-        return seq;
+
+        return seq.Play();
+    }
+
+    private Tween DoCountPoints(int count, int total)
+    {
+        int value = 0;
+        return DOTween.To(
+                () => value, x =>
+                {
+                    value = x;
+                    pointCountText.SetText("{0} / {1}", value, total);
+                }, total, pointCountDuration).SetEase(Ease.Linear)
+            .OnComplete(() =>
+            {
+                pointCountText.rectTransform.DOPunchScale(Vector3.one * pointCountPunchSize, pointCountPunchDuration,
+                    pointCountPunchStrength, pointCountPunchElasticity);
+            });
     }
 
     private void HidePlayButton()
@@ -77,36 +104,29 @@ public class LevelCompleteView : GameScreenView
         }
     }
 
-    private Tween ShowPlayButton()
+    private void ShowPlayButton()
     {
-        Sequence seq = DOTween.Sequence();
-        
         foreach (Image img in playButton.GetComponentsInChildren<Image>())
         {
-            seq.Join(img.DOColor(new Color(1, 1, 1, 1), 0.5f));
+            img.DOColor(new Color(1, 1, 1, 1), 0.0f);
         }
-
-        seq.Join(playButton.rectTransform.DOPunchScale(Vector3.one * 2.0f, 0.3f, vibrato: 1, elasticity: 0.1f));
-
-        return seq;
     }
 
     public override IEnumerator OnShow()
     {
         HidePlayButton();
-        contentWindow.anchoredPosition = new Vector2(0, -3000);
 
-        Sequence lvlCompleteSeq = DOTween.Sequence();
-        lvlCompleteSeq.Append(contentWindow.DOAnchorPos(Vector2.zero, 1.4f, false).SetEase(Ease.OutBounce));
-        lvlCompleteSeq.Append(DoCountPoints());
-
-        float completePerc = (float)GameSystem.GetGameManager().points / (float) maxPoints;
-        int starCount = Mathf.RoundToInt(Mathf.Lerp(1, 5, completePerc));
-        lvlCompleteSeq.Append(DoPresentStars(starCount));
-        lvlCompleteSeq.Play();
+        int points, maxPoints;
+        points = GameSystem.GetGameManager().points;
+        maxPoints = LevelCfgDb.GetCurrentLevel().maxPoints;
+        DoCountPoints(points,maxPoints);
         
+        float completePerc = (float)points / (float) maxPoints;
+        int starCount = Mathf.RoundToInt(Mathf.Lerp(1, 5, completePerc));
+        DoShowStars(starCount);
+
         yield return new WaitForSeconds(2);
-        ShowPlayButton().Play();
+        ShowPlayButton();
     }
     
     public double RoundDown(double number, int decimalPlaces)
@@ -117,10 +137,5 @@ public class LevelCompleteView : GameScreenView
     public override IEnumerator OnHide()
     {
         yield break;
-    }
-
-    private void Update()
-    {
-        pointCountText.SetText("{0} / {1}", currentPoints, maxPoints);
     }
 }
