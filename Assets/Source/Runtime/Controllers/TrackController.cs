@@ -141,7 +141,7 @@ public class TrackController : MonoBehaviour
         {
             if (TrackTime > Checkpoints[checkpointQueryIndex])
             {
-                GameSystem.GetGameManager().AddCheckpoint(Checkpoints[checkpointQueryIndex]);
+                GameSystem.GetGameManager().AddCheckpoint(checkpointQueryIndex);
                 checkpointQueryIndex++;
             }
         }

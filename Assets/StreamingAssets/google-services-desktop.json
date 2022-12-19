@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "134398242925",
+    "project_id": "llamasurfer",
+    "storage_bucket": "llamasurfer.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134398242925:android:287c126e15bc4faf284f64",
+        "android_client_info": {
+          "package_name": "com.brokenpixel.llamasurfer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "134398242925-vju467c886a2mqt25rvcl3oabc89v586.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQdVwyGlibCGtqU9FT2mFtz2lTget4GcU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "134398242925-vju467c886a2mqt25rvcl3oabc89v586.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

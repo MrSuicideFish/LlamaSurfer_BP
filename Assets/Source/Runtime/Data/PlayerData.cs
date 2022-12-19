@@ -12,7 +12,7 @@ public class PlayerData
         public const string DateCreated = "DateCreated";
         public const string LastLogin = "LastLogin";
         public const string HeartCount = "numOfHearts";
-        public const string BonusSurBlocks = "bonusBlocks";
+        public const string BonusBlockCount = "bonusBlocks";
         public const string LastCheckpoint = "LastCheckpoint";
     }
 
@@ -49,7 +49,7 @@ public class PlayerData
             _loadedPlayerData = new PlayerData();
             SetData(DataKey.DateCreated, DateTime.UtcNow.ToShortDateString());
             SetData(DataKey.HeartCount, 3);
-            SetData(DataKey.BonusSurBlocks, 0);
+            SetData(DataKey.BonusBlockCount, 0);
         }
         
         SetData(DataKey.LastLogin, DateTime.UtcNow.ToShortDateString());
@@ -71,32 +71,32 @@ public class PlayerData
         File.WriteAllText(path, json);
     }
 
-    public static object GetData(string key, object defaultValue)
-    {
-        if (_loadedPlayerData.data.ContainsKey(key))
-        {
-            return _loadedPlayerData.data[key];
-        }
-        else
-        {
-            _loadedPlayerData.data.Add(key, defaultValue);
-        }
-
-        return null;
-    }
-
     public static T GetData<T>(string key, object defaultValue)
     {
         if (_loadedPlayerData.data.ContainsKey(key))
         {
-            return (T)_loadedPlayerData.data[key];
+            object value = _loadedPlayerData.data[key];
+            if (typeof(T) == typeof(int))
+            {
+                value = Convert.ToInt32(value);
+                return (T)value;
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                value = Convert.ToBoolean(value);
+                return (T) value;
+            }
+            else
+            {
+                return (T)_loadedPlayerData.data[key];
+            }
         }
         else
         {
             _loadedPlayerData.data.Add(key, defaultValue);
         }
 
-        return default(T);
+        return (T)defaultValue;
     }
 
     public static void SetData(string key, object data)

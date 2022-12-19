@@ -12,8 +12,8 @@ public class GameUIManager
         LevelSelect,
         Options,
         PreGame,
-        Game,
-        GameFail,
+        GameSoftFail,
+        GameHardFail,
         GameSuccess
     }
 
@@ -73,24 +73,42 @@ public class GameUIManager
             _view.GetScreenView(GameScreenID.PreGame));
         _screens.Add(GameScreenID.PreGame, pregameController);
 
-        GameplayScreenController gameplayController = new GameplayScreenController(
-            _view.GetScreenView(GameScreenID.Game));
-        _screens.Add(GameScreenID.Game, gameplayController);
-                        
         LevelCompleteScreenController levelCompleteController = new LevelCompleteScreenController(
             _view.GetScreenView(GameScreenID.GameSuccess));
         _screens.Add(GameScreenID.GameSuccess, levelCompleteController);
                         
-        LevelFailedScreenController levelFailController = new LevelFailedScreenController(
-            _view.GetScreenView(GameScreenID.GameFail));
-        _screens.Add(GameScreenID.GameFail, levelFailController);
-
+        LevelFailedScreenController levelSoftFailController = new LevelFailedScreenController(
+            _view.GetScreenView(GameScreenID.GameSoftFail));
+        _screens.Add(GameScreenID.GameSoftFail, levelSoftFailController);
+        
+        LevelFailedScreenController levelHardFailController = new LevelFailedScreenController(
+            _view.GetScreenView(GameScreenID.GameHardFail));
+        _screens.Add(GameScreenID.GameHardFail, levelHardFailController);
+        
+        ToggleControlPanel(false);
+        ToggleInGameHeader(false);
+        
         GC.Collect(UnityEngine.Random.Range(1000, 9999), GCCollectionMode.Optimized);
     }
 
     public void GoToScreen(GameScreenID screenId)
     {
         GameApplicationHandle.BeginRoutine(ChangeScreensRoutine(screenId));
+    }
+
+    public void HideAllScreens()
+    {
+        _view.HideAllViews();
+    }
+
+    public void ToggleControlPanel(bool isOn)
+    {
+        _view.ToggleControlPanel(isOn);
+    }
+    
+    public void ToggleInGameHeader(bool isOn)
+    {
+        _view.ToggleInGameHeader(isOn);
     }
 
     private IEnumerator ChangeScreensRoutine(GameScreenID screenId)
