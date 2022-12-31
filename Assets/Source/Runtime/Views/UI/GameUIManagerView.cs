@@ -67,18 +67,17 @@ public class GameUIManagerView : MonoBehaviour
     public void ShowLevelsScreen()
     {
         Debug.Log("Showing levels screen");
+        GameUIManager.Instance.ToggleInGameHeader(false);
+        GameUIManager.Instance.ToggleControlPanel(true);
         ToggleScreenView(GameUIManager.GameScreenID.LevelSelect);
     }
 
     public void ShowOptionsScreen()
     {
         Debug.Log("Showing options screen");
+        GameUIManager.Instance.ToggleInGameHeader(false);
+        GameUIManager.Instance.ToggleControlPanel(false);
         ToggleScreenView(GameUIManager.GameScreenID.Options);
-    }
-
-    public void PurchaseNoAds()
-    {
-        
     }
 
     public void ToggleControlPanel(bool isOn)

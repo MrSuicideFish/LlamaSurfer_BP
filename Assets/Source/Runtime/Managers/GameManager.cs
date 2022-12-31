@@ -52,6 +52,7 @@ public class GameManager : MonoBehaviour
         GameSystem.GetTrackController().Play();
         gameHasStarted = true;
         GameUIManager.Instance.HideAllScreens();
+        GameUIManager.Instance.ToggleControlPanel(false);
         GameUIManager.Instance.ToggleInGameHeader(true);
         
         LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
@@ -65,12 +66,15 @@ public class GameManager : MonoBehaviour
     {
         gameHasEnded = true;
         GameSystem.GetTrackController().Pause();
+        GameUIManager.Instance.ToggleInGameHeader(true);
+        GameUIManager.Instance.ToggleControlPanel(true);
+        
         if (isWin)
         {
             playerHasFailed = false;
             ClearCheckpoint();
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSuccess);
-            
+
             LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
             if (currentLevel != null)
             {

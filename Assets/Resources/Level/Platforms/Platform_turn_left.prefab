@@ -69,7 +69,7 @@ Transform:
   - {fileID: 1510655027611021252}
   - {fileID: 3433252095981528759}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &-48503184418141965
 MonoBehaviour:
@@ -311,7 +311,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -607496294957369557, guid: cf9d054605ccddc4ca27603bc40e1a0d, type: 3}
 --- !u!1 &8315166149526497794

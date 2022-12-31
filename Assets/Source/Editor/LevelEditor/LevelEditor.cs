@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEditor.SceneManagement;
 using UnityEditor.ShortcutManagement;
+using UnityEditor.Toolbars;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.Splines;
 using Object = UnityEngine.Object;
@@ -28,7 +30,6 @@ public class LevelEditor : EditorTool
 {
     private LevelEditorWindow _editorWindow;
     private Vector3 _paintPosition;
-    private WorldObjectLayer _objectContainer;
     private WorldObjectBase _objectToPaint;
     private EditorLevelTrackTimeline _timeline;
     private EditorLevelTrackTimeline _playerX_Slider;
@@ -50,12 +51,31 @@ public class LevelEditor : EditorTool
     public void OnEnable()
     {
         InitGUI();
+        
+        EditorApplication.playModeStateChanged -= OnPlayStateChanged;
+        EditorApplication.playModeStateChanged += OnPlayStateChanged;
+    }
+    
+    private void OnDisable()
+    {
+        InitGUI();
+        if (_editorWindow != null)
+        {
+            _editorWindow.Close();
+        }
+    }
+
+    private void OnPlayStateChanged(PlayModeStateChange mode)
+    {
+        InitGUI();
+        if (_editorWindow != null)
+        {
+            _editorWindow.Close();
+        }
     }
 
     public override void OnActivated()
     {
-        if (!GameSystem.GetTrackController() == null) return;
-        if (Application.isPlaying) return;
         if (TrackCount == 0)
         {
             BuildStartPlatform();
@@ -64,61 +84,54 @@ public class LevelEditor : EditorTool
         
         SceneView.lastActiveSceneView?.ShowNotification(new GUIContent("Entering Level Editor"), .1f);
 
-        playerXPosition = Mathf.Clamp01(GameSystem.GetPlayer().moveX);
-        System.Type inspectorType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+        InitGUI();
         
         // initialize editor window
+        System.Type inspectorType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
         _editorWindow = EditorWindow.GetWindow<LevelEditorWindow>(desiredDockNextTo: inspectorType);
+        _editorWindow.OnEraseAllEntities.RemoveAllListeners();
         _editorWindow.OnEraseAllEntities.AddListener(GetObjectLayer().EraseAll);
-        _editorWindow.OnPaintEntityChanged.AddListener((obj) => { _objectToPaint = obj; });
-        _editorWindow.OnAddPlatform.AddListener(BuildNextPlatform);
-        _editorWindow.OnDeletePlatform.AddListener(RemoveLast);
-        InitGUI();
-    }
-
-    private void InitGUI()
-    {
-        Color timelineColor = new Color();
-        timelineColor.r = 0.1f;
-        timelineColor.g = 0.1f;
-        timelineColor.b = 0.15f;
-        timelineColor.a = 1.0f;
-
-        Color cursorColor = new Color();
-        cursorColor.r = 0.8f;
-        cursorColor.g = 0.0f;
-        cursorColor.b = 0.4f;
-        cursorColor.a = 1.0f;
-
-        Color notchColor = new Color();
-        notchColor.r = 0.2f;
-        notchColor.g = 0.2f;
-        notchColor.b = 0.25f;
-        notchColor.a = 1.0f;
         
-        _timeline = new EditorLevelTrackTimeline(25, 
-            0.0f, 1.0f,
-            25, timelineColor, cursorColor, notchColor);
+        _editorWindow.OnPaintEntityChanged.RemoveAllListeners();
+        _editorWindow.OnPaintEntityChanged.AddListener((obj) => { _objectToPaint = obj; });
+        
+        _editorWindow.OnAddPlatform.RemoveAllListeners();
+        _editorWindow.OnAddPlatform.AddListener(BuildNextPlatform);
+        
+        _editorWindow.OnDeletePlatform.RemoveAllListeners();
+        _editorWindow.OnDeletePlatform.AddListener(RemoveLast);
 
-        timelineColor.r *= 0.7f;
-        timelineColor.g *= 0.7f;
-        timelineColor.b *= 0.7f;
-        cursorColor.g = 0.3f;
-        cursorColor.b = 0.4f;
-        notchColor.r *= 1.5f;
-        notchColor.g *= 1.5f;
-        notchColor.b *= 1.5f;
-        _playerX_Slider = new EditorLevelTrackTimeline(10, 
-            0.0f, 1.0f,
-            25, timelineColor, cursorColor, notchColor);
+        RebuildAllTrackKnots();
     }
 
-    private void OnDisable()
+    public void OnDestroy()
     {
         if (_editorWindow != null)
         {
             _editorWindow.Close();
         }
+    }
+
+    readonly Color timelineBackgroundColor = new Color(0.1f, 0.1f, 0.15f, 1.0f);
+    readonly Color xSliderBackgroundColor = new Color(0.07f, 0.07f, 0.105f, 1.0f);
+    
+    readonly Color timelineCursorColor = new Color(0.8f, 0.0f, 0.4f, 1.0f);
+    readonly Color xSliderCursorColor = new Color(0.8f, 0.0f, 0.4f, 1.0f);
+    
+    readonly Color timelineNotchColor = new Color(0.2f, 0.2f, 0.25f, 1.0f);
+    readonly Color xSliderNotchColor = new Color(0.2f, 0.2f, 0.25f, 1.0f);
+    
+    private void InitGUI()
+    {
+        _timeline = new EditorLevelTrackTimeline(25, 
+            0.0f, 1.0f,
+            25, timelineBackgroundColor, timelineCursorColor, timelineNotchColor);
+        
+        _playerX_Slider = new EditorLevelTrackTimeline(10, 
+            0.0f, 1.0f,
+            25, xSliderBackgroundColor, xSliderCursorColor, xSliderNotchColor);
+        
+        playerXPosition = Mathf.Clamp01(GameSystem.GetPlayer().moveX);
     }
 
     // The second "context" argument accepts an EditorWindow type.
@@ -145,13 +158,7 @@ public class LevelEditor : EditorTool
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
         DrawWorldGizmos();
 
-        // Handle mouse position query
-        // & adding/removing entities on mouse down
-        // Only do this if the mouse isn't too far
-        // towards the bottom of the screen.
-        float mouseY = Event.current.mousePosition.y;
-        float screenHeight = sceneView.camera.pixelRect.height;
-        if (mouseY < screenHeight - 50)
+        if (Screen.height - Event.current.mousePosition.y > 150)
         {
             HandleMouseControl(sceneView);
         }
@@ -183,54 +190,9 @@ public class LevelEditor : EditorTool
         TeleportSceneCamera(Camera.main.transform.position,
             GameSystem.GetPlayer().transform.position - Camera.main.transform.position);
     }
-    
-    private void DrawTrackWindow()
-    {
-        using (new GUILayout.VerticalScope(GUILayout.MaxWidth(200)))
-        {
-            EditorGUI.BeginChangeCheck();
 
-            DrawTrackPositionSlider();
-            
-            if (EditorGUI.EndChangeCheck())
-            {
-                Undo.RecordObject(GetPlatformContainer(), "change platforms");
-                Undo.RecordObject(GameSystem.GetTrackController(), "change track");
-            }
-        }
-    }
-    
-    private float playerXPosition;
-    private void DrawTrackPositionSlider()
-    {
-        const float slider_space = 15;
-        
-        GUILayout.Label($"TrackPosition ({GameSystem.GetTrackController().TrackTime})");
-        GUILayout.Space(slider_space);
-        
-        float newTrackTime = GUILayout.HorizontalSlider(GameSystem.GetTrackController().TrackTime, 0.0f, 1.0f);
-        if (!GameSystem.GetTrackController().TrackTime.Equals(newTrackTime))
-        {
-            GameSystem.GetTrackController().SetTrackTime(newTrackTime, fireTrackEvents: false);
-        }
+    private float playerXPosition = 0.5f;
 
-        GUILayout.Space(slider_space);
-        
-        float newMoveX = GUILayout.HorizontalSlider(playerXPosition, 0.0f, 1.0f);
-        if (!playerXPosition.Equals(newMoveX))
-        {
-            playerXPosition = newMoveX;
-            GameSystem.GetPlayer().moveX = playerXPosition;
-        }
-        
-        GUILayout.Space(slider_space);
-        using (new GUILayout.HorizontalScope())
-        {
-            if (GUILayout.Button("<<")) GameSystem.GetTrackController().Step(-(1.0f / GameSystem.GetTrackController().spline.Spline.GetLength()));
-            if (GUILayout.Button(">>")) GameSystem.GetTrackController().Step((1.0f / GameSystem.GetTrackController().spline.Spline.GetLength()));
-        }
-    }
-    
     private void DrawWorldGizmos()
     {
         const float gizmoThickness = 6.0f;
@@ -255,21 +217,19 @@ public class LevelEditor : EditorTool
 
     private WorldObjectLayer GetObjectLayer()
     {
-        if (_objectContainer == null)
+        WorldObjectLayer result = null;
+        GameObject existing = GameObject.FindGameObjectWithTag("WorldObjectLayer");
+        if (existing != null)
         {
-            GameObject existing = GameObject.FindGameObjectWithTag("WorldObjectLayer");
-            if (existing != null)
-            {
-                _objectContainer = existing.GetComponent<WorldObjectLayer>();
-            }
-            else
-            {
-                _objectContainer = new GameObject("_OBJECTS").AddComponent<WorldObjectLayer>();
-                _objectContainer.gameObject.tag = "WorldObjectLayer";
-            }
+            result = existing.GetComponent<WorldObjectLayer>();
+        }
+        else
+        {
+            result = new GameObject("_OBJECTS").AddComponent<WorldObjectLayer>();
+            result.gameObject.tag = "WorldObjectLayer";
         }
 
-        return _objectContainer;
+        return result;
     }
     
     #region Platforms
@@ -537,6 +497,15 @@ public class LevelEditor : EditorTool
             track.spline.Spline.Clear();
         }
     }
+
+    private void RebuildAllTrackKnots()
+    {
+        ClearAllTrackKnots();
+        foreach (var platform in GameSystem.GetTrackController()._platforms)
+        {
+            AppendPlatformKnots(platform.platform);
+        }
+    }
     #endregion
     
     #region Entity
@@ -548,9 +517,9 @@ public class LevelEditor : EditorTool
             WorldObjectBase newObj = PrefabUtility.InstantiatePrefab(_objectToPaint) as WorldObjectBase;
             if (newObj != null)
             {
-                newObj.transform.position = position;
-                newObj.transform.eulerAngles = rotation;
                 GetObjectLayer().AddObject(position, newObj);
+                newObj.transform.position = position;
+                newObj.transform.forward = rotation;
             }
         }
     }
@@ -575,7 +544,7 @@ public class LevelEditor : EditorTool
                 var pos = position;
                 pos.y += objs.Count;
                 newObj.transform.position = pos;
-                newObj.transform.eulerAngles = rotation;
+                newObj.transform.eulerAngles = objs[0].transform.eulerAngles;
                 GetObjectLayer().AddObject(position, newObj);
             }
         }
@@ -594,55 +563,114 @@ public class LevelEditor : EditorTool
     }
     #endregion
 
+    private const int resolution = 5;
     private void HandleMouseControl(SceneView sceneView)
     {
         if (BuildMode != EBuildMode.Entity) return;
-        
-        var worldSamplePos = SampleMousePosition();
 
-        float size = 0.5f;
-        DrawPaintPreviewGridRect(worldSamplePos, size,
-            PaintMode == EPaintMode.Paint ? Color.blue : Color.red,
-            Color.black);
+        const float PATH_DIST_LIMIT = 3;
+
+        var mouseSamplePos = SampleMousePosition();
+        var paintPosition = mouseSamplePos;
         
-        // paint / erase
-        if ((Event.current.type == EventType.MouseDown 
-             || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
+        float3 closestPos;
+        float closestTime;
+        SplineUtility.GetNearestPoint(GameSystem.GetTrackController().spline.Spline, paintPosition, 
+            out closestPos,
+            out closestTime);
+        
+        // snap closest time to nearest hundreth or thousandth
+        closestTime = Mathf.Round(closestTime * (18f * resolution)) / (18f * resolution);
+        
+        // get pos a new snapped time
+        Vector3 closestTimePositionOnLine = GameSystem.GetTrackController().GetTrackPositionAt(closestTime);
+        paintPosition = closestTimePositionOnLine;
+        
+        // divide X-cross into 6 (3 per curve side)
+        Vector3 up = GameSystem.GetTrackController().spline.EvaluateUpVector(closestTime);
+        Vector3 tangent = GameSystem.GetTrackController().spline.EvaluateTangent(closestTime);
+        Vector3 cross = Vector3.Cross(up, tangent).normalized;
+
+        // determine which x-cross is closest to sample position
+        // snap sample pos to nearest cross
+        Vector3 mouseDir = (mouseSamplePos - paintPosition);
+        Vector3 proj = Vector3.Project(mouseDir, cross);
+        proj = Vector3.ClampMagnitude(proj, 3.0f);
+
+        float appr = 2;//(3.0f / (resolution / 1.0f));
+        float rounded = Mathf.Round(proj.magnitude * appr) / appr;
+        Vector3 snappedProj = proj.normalized * rounded;
+
+        paintPosition = paintPosition + snappedProj;
+        paintPosition.y = 0.5f;
+        Vector3 paintRotation = ((closestTimePositionOnLine + tangent) - closestTimePositionOnLine);
+
+        if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
         {
             if (PaintMode == EPaintMode.Paint)
             {
-                if (!ObjectExistsAtPosition(worldSamplePos))
+                if (!ObjectExistsAtPosition(paintPosition))
                 {
-                    AddWorldObject(worldSamplePos, Vector3.forward);
+                    AddWorldObject(paintPosition, paintRotation);
                 }
                 else if(_objectToPaint.canStack)
                 {
-                    StackWorldObject(worldSamplePos, Vector3.forward);
+                    StackWorldObject(paintPosition, paintRotation);
                 }
             }
             else if (PaintMode == EPaintMode.Erase)
             {
-                RemoveWorldObject(worldSamplePos);
+                RemoveWorldObject(paintPosition);
             }
+        }
+        
+        Vector3 drawSamplePosition = paintPosition;
+        int objCount = GetObjectLayer().ObjectCountAtPosition(paintPosition);
+        drawSamplePosition += new Vector3(0, objCount-0.5f, 0);
+        DrawPaintPreviewGridRectDotted(paintPosition - new Vector3(0, 0.5f, 0), 1.0f, Quaternion.LookRotation(paintRotation), Color.red, Color.white);
+        
+        //debugging
+        if (PaintMode == EPaintMode.Paint)
+        {
+            DrawPaintPreviewGridRect(drawSamplePosition, 1.0f, Quaternion.LookRotation(paintRotation), Color.cyan, Color.white);
+        }
+        else if (PaintMode == EPaintMode.Erase)
+        {
+            DrawPaintPreviewGridRect(drawSamplePosition, 1.0f, Quaternion.LookRotation(paintRotation), Color.red, Color.white);
         }
     }
 
-    private void DrawPaintPreviewGridRect(Vector3 position, float size, Color faceColor, Color outlineColor)
+    private void DrawPaintPreviewGridRect(Vector3 position, float size, Quaternion rotation, Color faceColor, Color outlineColor)
     {
-        PaintGridRect(position, size, faceColor, outlineColor);
-    }
-
-    private void PaintGridRect(Vector3 position, float size, Color faceColor, Color outlineColor)
-    {
+        size /= 2.0f;
         Vector3[] verts = new Vector3[]
         {
-            new Vector3(position.x - size, position.y, position.z - size),
-            new Vector3(position.x - size, position.y, position.z + size),
-            new Vector3(position.x + size, position.y, position.z + size),
-            new Vector3(position.x + size, position.y, position.z - size)
+            rotation * (new Vector3(position.x - size, position.y, position.z - size) - position) + position,
+            rotation * (new Vector3(position.x - size, position.y, position.z + size) - position) + position,
+            rotation * (new Vector3(position.x + size, position.y, position.z + size) - position) + position,
+            rotation * (new Vector3(position.x + size, position.y, position.z - size) - position) + position
         };
         
         Handles.DrawSolidRectangleWithOutline(verts, faceColor, outlineColor);
+    }
+    
+    private void DrawPaintPreviewGridRectDotted(Vector3 position, float size, Quaternion rotation, Color faceColor, Color outlineColor)
+    {
+        size /= 2.0f;
+        Vector3[] verts = new Vector3[]
+        {
+            rotation * (new Vector3(position.x - size, position.y, position.z - size) - position) + position,
+            rotation * (new Vector3(position.x - size, position.y, position.z + size) - position) + position,
+            rotation * (new Vector3(position.x + size, position.y, position.z + size) - position) + position,
+            rotation * (new Vector3(position.x + size, position.y, position.z - size) - position) + position
+        };
+
+        Handles.color = outlineColor;
+        Handles.DrawDottedLine(verts[0], verts[1], 15.0f);
+        Handles.DrawDottedLine(verts[1], verts[2], 15.0f);
+        Handles.DrawDottedLine(verts[2], verts[3], 15.0f);
+        Handles.DrawDottedLine(verts[3], verts[0], 15.0f);
+        Handles.DrawAAPolyLine(verts);
     }
 
     private Vector3 SampleMousePosition()
@@ -654,10 +682,8 @@ public class LevelEditor : EditorTool
         Plane drawPlane = new Plane(Vector3.up, new Vector3(0, 0, 0));
         drawPlane.Raycast(ray, out float enter);
         var point = ray.GetPoint(enter);
-        Vector3Int samplePosInt =
-            new Vector3Int(Mathf.RoundToInt(point.x-0.5f), Mathf.RoundToInt(point.y), Mathf.RoundToInt(point.z-0.5f));
 
-        return GameSystem.GetTrackController()._grid.GetCellCenterWorld(samplePosInt);
+        return point;
     }
     
     public static void TeleportSceneCamera(Vector3 cam_position, Vector3 cam_forward)

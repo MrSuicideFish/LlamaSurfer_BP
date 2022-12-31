@@ -218,6 +218,11 @@ public class TrackController : MonoBehaviour
     {
         return _trackTangent;
     }
+    
+    public Vector3 GetTrackTangentAt(float time)
+    {
+        return spline.EvaluateTangent(time);
+    }
 
     public Vector3 GetTrackWorldUp()
     {

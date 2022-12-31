@@ -131,7 +131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e3cc976e99d154b8c242d908dbd8f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canStack: 0
+  canStack: 1
   value: 1
   animation: {fileID: 1621509976811726043}
 --- !u!135 &1197092607
