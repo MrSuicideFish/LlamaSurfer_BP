@@ -14,6 +14,10 @@ public class EditorLevelTrackTimeline
     public GUIStyle timelineCursorStyle;
     public GUIStyle timelineNotchStyle;
 
+    private Color timelineColor;
+    private Color timelineCursorColor;
+    private Color timelineNotchColor;
+
     public EditorLevelTrackTimeline(int resolution, float leftValue, float rightValue, float height,
         Color timelineColor, Color timelineCursorColor, Color timelineNotchColor)
     {
@@ -21,7 +25,15 @@ public class EditorLevelTrackTimeline
         this.height = height;
         this.leftValue = leftValue;
         this.rightValue = rightValue;
-        
+
+        this.timelineColor = timelineColor;
+        this.timelineCursorColor = timelineCursorColor;
+        this.timelineNotchColor = timelineNotchColor;
+        InitGUI();
+    }
+
+    private void InitGUI()
+    {
         cursorSize = Mathf.Lerp(leftValue, rightValue, 1.0f / resolution);
         timelineStyle = new GUIStyle();
         timelineStyle.normal.background = LevelEditorStyles.GetOrCreateTexture(timelineColor);
@@ -35,6 +47,8 @@ public class EditorLevelTrackTimeline
     
     public float Draw(float value)
     {
+        InitGUI();
+        
         Rect timelineRect = GUILayoutUtility.GetRect(150, Screen.width, height, height);
 
         Rect sliderRect = new Rect(timelineRect);
@@ -54,6 +68,4 @@ public class EditorLevelTrackTimeline
 
         return value;
     }
-
-
 }

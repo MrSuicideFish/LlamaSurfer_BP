@@ -10,23 +10,17 @@ public static class LevelEditorStyles
 
     public static Texture2D GetOrCreateTexture(Color color)
     {
-        int hashCode = color.GetHashCode();
-        if (!_texture_cache.ContainsKey(hashCode))
+        Texture2D tex = new Texture2D(blockSize, blockSize);
+        Color[] colors = new Color[blockSize * blockSize];
+        for (int i = 0; i < colors.Length; i++)
         {
-            Texture2D tex = new Texture2D(blockSize, blockSize);
-            Color[] colors = new Color[blockSize * blockSize];
-            for (int i = 0; i < colors.Length; i++)
-            {
-                colors[i] = color;
-            }
-
-            tex.SetPixels(0, 0, blockSize, blockSize, colors);
-            tex.Apply();
-            
-            _texture_cache.Add(hashCode, tex);
+            colors[i] = color;
         }
-        
-        return _texture_cache[hashCode];
+
+        tex.SetPixels(0, 0, blockSize, blockSize, colors);
+        tex.Apply();
+
+        return tex;
     }
 
     public static GUIStyle buildModeButton

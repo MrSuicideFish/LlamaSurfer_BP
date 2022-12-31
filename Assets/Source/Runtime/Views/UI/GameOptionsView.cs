@@ -1,24 +1,40 @@
-﻿using System;
-using System.Collections;
-using UnityEngine.Audio;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class GameOptionsView : GameScreenView
 {
-    public Toggle BGM_ToggleON;
-    public Toggle SFX_ToggleON;
-
-    public void Start()
+    public Image AudioToggleImg;
+    public Sprite volumeOffSprite;
+    public Sprite volumeOnSprite;
+    
+    public void OnEnable()
     {
-        BGM_ToggleON.onValueChanged.AddListener((value =>
+        if (AudioToggleImg != null)
         {
-            
-        }));
+            AudioToggleImg.sprite = GameSettings.IsAudioMuted() ? volumeOffSprite : volumeOnSprite;
+        }
+    }
+
+    public void ToggleMuteButton()
+    {
+        bool isMuted = GameSettings.IsAudioMuted();
+        GameSettings.ToggleAudio(!isMuted);
+        if (AudioToggleImg != null)
+        {
+            AudioToggleImg.sprite = !isMuted ? volumeOffSprite : volumeOnSprite;
+        }
+    }
+    
+    
+    public void PurchaseNoAds()
+    {
         
-        SFX_ToggleON.onValueChanged.AddListener((value =>
-        {
-            
-        }));
+    }
+
+    public void Share()
+    {
+        
     }
 
     public override IEnumerator OnShow()

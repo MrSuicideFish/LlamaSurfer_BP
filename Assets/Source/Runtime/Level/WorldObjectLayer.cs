@@ -37,8 +37,8 @@ public class WorldObjectLayer : MonoBehaviour
             existing.objects = new List<WorldObjectBase>();
             allObjects.Add(existing);
         }
-        
-        obj.transform.SetParent(this.transform);
+
+        obj.transform.SetParent(this.transform, true);
         existing.objects.Add(obj);
     }
 
@@ -83,6 +83,26 @@ public class WorldObjectLayer : MonoBehaviour
 
         return null;
     }
+    
+    public void GetObjectsAtPosition(Vector3 position, ref List<GameObject> objects)
+    {
+        if (allObjects == null)
+        {
+            allObjects = new List<LevelObjectInfo>();
+        }
+
+        objects = new List<GameObject>();
+        foreach (LevelObjectInfo objs in allObjects)
+        {
+            if (objs.position == position)
+            {
+                foreach (var o in objs.objects)
+                {
+                    objects.Add(o.gameObject);
+                }
+            }
+        }
+    }
 
     public void GetObjectsAtPosition(Vector3 position, ref List<WorldObjectBase> objects)
     {
@@ -101,21 +121,47 @@ public class WorldObjectLayer : MonoBehaviour
         }
     }
 
-    public void EraseAll()
+    public int ObjectCountAtPosition(Vector3 position)
     {
-        if (allObjects == null || allObjects.Count == 0) return;
-        for (int i = 0; i < allObjects.Count; i++)
+        if (allObjects == null)
         {
-            for (int j = 0; j < allObjects[i].objects.Count; j++)
-            {
-                GameObject.DestroyImmediate(allObjects[i].objects[j]);
-            }
-            allObjects[i].objects.Clear();
+            allObjects = new List<LevelObjectInfo>();
         }
-        allObjects.Clear();
-        GameObject.DestroyImmediate(gameObject);
+
+        int count = 0;
+        foreach (LevelObjectInfo objs in allObjects)
+        {
+            if (objs.position == position)
+            {
+                count += objs.objects.Count;
+            }
+        }
+
+        return count;
     }
 
+    public void EraseAll()
+    {
+        if (allObjects != null && allObjects.Count > 0)
+        {
+            for (int i = 0; i < allObjects.Count; i++)
+            {
+                for (int j = 0; j < allObjects[i].objects.Count; j++)
+                {
+                    DestroyImmediate(allObjects[i].objects[j]);
+                }
+                allObjects[i].objects.Clear();
+            }
+            allObjects.Clear();
+        }
+
+        for (int i = transform.childCount-1; i >= 0; i--)
+        {
+            DestroyImmediate(transform.GetChild(i).gameObject);
+        }
+    }
+
+    #if UNITY_EDITOR
     private void OnValidate()
     {
         if (allObjects != null)
@@ -133,4 +179,6 @@ public class WorldObjectLayer : MonoBehaviour
             }
         }
     }
+#endif
+
 }

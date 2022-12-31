@@ -70,15 +70,41 @@ public class LevelEditorWindow : EditorWindow
 
     private void OnEnable()
     {
-        
-        OnRebuildTrack = new LevelEditorEvent();
-        OnBuildModeChanged = new LevelEditorEvent<EBuildMode>();
-        OnEraseAllEntities = new LevelEditorEvent();
-        OnPaintModeChanged = new LevelEditorEvent<EPaintMode>();
-        OnPaintEntityChanged = new LevelEditorEvent<WorldObjectBase>();
-        OnAddPlatform = new LevelEditorEvent<Platform>();
-        OnDeletePlatform = new LevelEditorEvent();
-        
+        if (OnRebuildTrack == null)
+        {
+            OnRebuildTrack = new LevelEditorEvent();
+        }
+
+        if (OnBuildModeChanged == null)
+        {
+            OnBuildModeChanged = new LevelEditorEvent<EBuildMode>();
+        }
+
+        if (OnEraseAllEntities == null)
+        {
+            OnEraseAllEntities = new LevelEditorEvent();
+        }
+
+        if (OnPaintModeChanged == null)
+        {
+            OnPaintModeChanged = new LevelEditorEvent<EPaintMode>();
+        }
+
+        if (OnPaintEntityChanged == null)
+        {
+            OnPaintEntityChanged = new LevelEditorEvent<WorldObjectBase>();
+        }
+
+        if (OnAddPlatform == null)
+        {
+            OnAddPlatform = new LevelEditorEvent<Platform>();
+        }
+
+        if (OnDeletePlatform == null)
+        {
+            OnDeletePlatform = new LevelEditorEvent();
+        }
+
         ReloadObjectRepo();
         ReloadPlatformRepo();
         ReloadGraphicIcons();
@@ -90,6 +116,7 @@ public class LevelEditorWindow : EditorWindow
         using (new GUILayout.HorizontalScope())
         {
             GUILayout.FlexibleSpace();
+
             if (GUILayout.Toggle(LevelEditor.PaintMode == EPaintMode.Paint, _paintModeIcons[0], 
                     LevelEditorStyles.GetToggleButtonStyle(LevelEditor.PaintMode == EPaintMode.Paint),
                     GUILayout.Height(64), GUILayout.Width(150)))
