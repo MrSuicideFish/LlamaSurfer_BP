@@ -5,8 +5,30 @@ using UnityEngine;
 
 public class PreGameScreenView : GameScreenView
 {
+    public UILevelButton[] levelButtons;
+    
     public override IEnumerator OnShow()
     {
+        LevelCfg levelCfg = LevelCfgDb.GetCurrentLevel();
+        if (levelCfg != null)
+        {
+            int currentLevel = levelCfg.sceneIndex;
+            int round = Mathf.FloorToInt(currentLevel / 5) * 5;
+            int next = round;
+
+            if (round == 0)
+            {
+                round++;
+                next++;
+            }
+        
+            for (int i = 0; i < levelButtons.Length; i++)
+            {
+                levelButtons[i].SetLevel(next, next <= currentLevel);
+                next++;
+            }
+        }
+        
         yield break;
     }
 
@@ -20,9 +42,12 @@ public class PreGameScreenView : GameScreenView
         if (GameSystem.GetGameManager().gameHasStarted) return;
         if (Input.touchCount > 0)
         {
-            if (Input.GetTouch(0).phase == TouchPhase.Moved)
+            if (Input.GetTouch(0).position.y < Screen.height / 2.0f)
             {
-                GameSystem.GetGameManager().StartGame();
+                if (Input.GetTouch(0).phase == TouchPhase.Moved)
+                {
+                    GameSystem.GetGameManager().StartGame();
+                }
             }
         }
     }

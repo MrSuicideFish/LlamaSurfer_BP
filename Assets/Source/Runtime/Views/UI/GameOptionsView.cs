@@ -29,10 +29,24 @@ public class GameOptionsView : GameScreenView
     
     public void PurchaseNoAds()
     {
-        
     }
 
     public void Share()
+    {
+        
+    }
+
+    public void OpenTermsOfUse()
+    {
+        
+    }
+
+    public void OpenPrivacy()
+    {
+        
+    }
+
+    public void OpenBrokenPixelSite()
     {
         
     }

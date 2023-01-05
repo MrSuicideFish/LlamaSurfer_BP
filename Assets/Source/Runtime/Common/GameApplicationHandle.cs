@@ -2,7 +2,6 @@
 using System.Collections;
 using Firebase;
 using UnityEngine;
-using Firebase.Analytics;
 
 public class GameApplicationHandle : MonoBehaviour
 {
@@ -35,6 +34,9 @@ public class GameApplicationHandle : MonoBehaviour
             if (dependencyStatus == Firebase.DependencyStatus.Available)
             {
                 FirebaseApp app = Firebase.FirebaseApp.DefaultInstance;
+                
+                // Initialize ads
+                AdsManager.Initialize();
             }
             else
             {
@@ -51,6 +53,10 @@ public class GameApplicationHandle : MonoBehaviour
         {
             Instance.StopAllCoroutines();
         }
+        
+#if !UNITY_EDITOR
+        AdsManager.Shutdown();
+#endif
         
         GC.Collect(100, GCCollectionMode.Forced);
     } 

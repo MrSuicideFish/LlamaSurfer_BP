@@ -564,12 +564,11 @@ public class LevelEditor : EditorTool
     #endregion
 
     private const int resolution = 5;
+    private const float PATH_DIST_LIMIT = 3;
     private void HandleMouseControl(SceneView sceneView)
     {
         if (BuildMode != EBuildMode.Entity) return;
-
-        const float PATH_DIST_LIMIT = 3;
-
+        
         var mouseSamplePos = SampleMousePosition();
         var paintPosition = mouseSamplePos;
         
@@ -595,9 +594,9 @@ public class LevelEditor : EditorTool
         // snap sample pos to nearest cross
         Vector3 mouseDir = (mouseSamplePos - paintPosition);
         Vector3 proj = Vector3.Project(mouseDir, cross);
-        proj = Vector3.ClampMagnitude(proj, 3.0f);
+        proj = Vector3.ClampMagnitude(proj, PATH_DIST_LIMIT);
 
-        float appr = 2;//(3.0f / (resolution / 1.0f));
+        float appr = 2;
         float rounded = Mathf.Round(proj.magnitude * appr) / appr;
         Vector3 snappedProj = proj.normalized * rounded;
 

@@ -56,6 +56,7 @@ public class GameUIManagerView : MonoBehaviour
     {
         Debug.Log("Going to next level");
         LevelLoader.GoToNextLevel();
+        AdsManager.ShowInterstitial();
     }
     
     public void ReplayLevel()
