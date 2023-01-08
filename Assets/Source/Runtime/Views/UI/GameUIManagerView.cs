@@ -55,8 +55,19 @@ public class GameUIManagerView : MonoBehaviour
     public void GoToNextLevel()
     {
         Debug.Log("Going to next level");
-        LevelLoader.GoToNextLevel();
-        AdsManager.ShowInterstitial();
+
+        AdRequestInfo adRequest = new AdRequestInfo();
+        adRequest.OnAdComplete = () =>
+        {
+            LevelLoader.GoToNextLevel();
+        };
+
+        adRequest.OnAdShowFailed = () =>
+        {
+            LevelLoader.GoToNextLevel();
+        };
+        
+        AdsManager.ShowInterstitial(adRequest);
     }
     
     public void ReplayLevel()

@@ -1,5 +1,4 @@
-﻿#define USE_TEST_ADS
-using System;
+﻿using System;
 using GoogleMobileAds.Api;
 using UnityEngine;
 
@@ -7,15 +6,9 @@ public class AdsManager
 {
     private static AdsManager _inst;
     
-#if USE_TEST_ADS
-    private const string BannerAdUnitId = "ca-app-pub-3940256099942544/6300978111";
-    private const string InterstitialAdUnitId = "ca-app-pub-3940256099942544/1033173712";
-    private const string RewardedAdUnitId = "ca-app-pub-3940256099942544/5224354917";
-#else
-    private const string BannerAdUnitId = "ca-app-pub-9518312041316421/3691356089";
-    private const string InterstitialAdUnitId = "ca-app-pub-9518312041316421/5142386163";
-    private const string RewardedAdUnitId = "ca-app-pub-9518312041316421/6866531372";
-#endif
+    private const string BannerAdUnitId = "ca-app-pub-9008022025116492/4724395833";
+    private const string InterstitialAdUnitId = "ca-app-pub-9008022025116492/1136504617";
+    private const string RewardedAdUnitId = "ca-app-pub-9008022025116492/2098232494";
 
     private BannerView _bannerView;
     private BannerView BannerView
@@ -24,7 +17,7 @@ public class AdsManager
         {
             if (_bannerView == null)
             {
-                _bannerView = new BannerView(BannerAdUnitId, AdSize.Banner, AdPosition.Top);
+                _bannerView = new BannerView(BannerAdUnitId, AdSize.Banner, AdPosition.Bottom);
                 _bannerView.OnAdLoaded += _inst.OnAdLoaded;
                 _bannerView.OnAdFailedToLoad += _inst.OnAdLoadFailed;
                 _bannerView.OnAdClosed += _inst.OnAdClose;
@@ -71,11 +64,17 @@ public class AdsManager
         }
     }
 
+    private AdRequestInfo _request;
+    private bool _isInitialized;
+
     public static void Initialize()
     {
+        Debug.Log("Initializing Ads");
         _inst = new AdsManager();
         MobileAds.Initialize(initStatus =>
         {
+            Debug.Log($"Init Mobile Ads: {initStatus}");
+            _inst._isInitialized = true;
             LoadInterstitial();
             LoadRewarded();
             ShowBanner();
@@ -91,40 +90,68 @@ public class AdsManager
 
     public static void ShowBanner()
     {
-        AdRequest request = new AdRequest.Builder().Build();
-        _inst.BannerView.LoadAd(request);
+        if (_inst._isInitialized)
+        {
+            AdRequest request = new AdRequest.Builder().Build();
+            _inst.BannerView.LoadAd(request);
+        }
     }
 
     public static void HideBanner()
     {
-        _inst.BannerView.Hide();
-    }
-
-    private static void LoadInterstitial()
-    {
-        AdRequest request = new AdRequest.Builder().Build();
-        _inst.interstitial.LoadAd(request);
-    }
-
-    public static void ShowInterstitial()
-    {
-        if (_inst.interstitial.IsLoaded())
+        if (_inst._isInitialized)
         {
-            _inst.interstitial.Show();
+            _inst.BannerView.Hide();
+        }
+    }
+
+    public static void LoadInterstitial()
+    {
+        if (_inst._isInitialized)
+        {
+            AdRequest request = new AdRequest.Builder().Build();
+            _inst.interstitial.LoadAd(request);
+        }
+    }
+
+    public static void ShowInterstitial(AdRequestInfo request)
+    {
+        if (_inst._isInitialized)
+        {
+            if (_inst.interstitial.IsLoaded())
+            {
+                _inst._request = request;
+                _inst.interstitial.Show();
+            }
+        }
+        else
+        {
+            request.OnAdComplete?.Invoke();
         }
     }
 
     public static void LoadRewarded()
     {
-        AdRequest request = new AdRequest.Builder().Build();
-        _inst.Rewarded.LoadAd(request);
+        if (_inst._isInitialized)
+        {
+            AdRequest request = new AdRequest.Builder().Build();
+            _inst.Rewarded.LoadAd(request);
+        }
     }
 
-    public static void ShowRewarded()
+    public static void ShowRewarded(AdRequestInfo request)
     {
-        if (_inst.Rewarded.IsLoaded())
+        if (_inst._isInitialized)
         {
-            _inst.Rewarded.Show();
+            if (_inst.Rewarded.IsLoaded())
+            {
+                _inst._request = request;
+                _inst.Rewarded.Show();
+            }
+        }
+        else
+        {
+            request.OnAdComplete?.Invoke();
         }
     }
 
@@ -140,18 +167,29 @@ public class AdsManager
     
     private void OnAdShowFailed(object sender, AdErrorEventArgs args)
     {
-
         Debug.Log($"Ad Failed To Show - Sender:{sender}\nArgs:{args}");
+        if (_request != null)
+        {
+            _request.OnAdShowFailed?.Invoke();
+        }
     }
 
     private void OnAdShow(object sender, EventArgs args)
     {
         Debug.Log($"On ad Show - Sender:{sender}\nArgs:{args}");
+        if (_request != null)
+        {
+            _request.OnAdShow?.Invoke();
+        }
     }
 
     private void OnAdClose(object sender, EventArgs args)
     {
         Debug.Log($"On ad Close - Sender:{sender}\nArgs:{args}");
+        if (_request != null)
+        {
+            _request.OnAdComplete?.Invoke();
+        }
     }
     private void OnRewardedAdGranted(object sender, Reward args)
     {

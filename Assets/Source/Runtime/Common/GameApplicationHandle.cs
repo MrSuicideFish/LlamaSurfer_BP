@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using Firebase;
+
 using UnityEngine;
 
 public class GameApplicationHandle : MonoBehaviour
@@ -26,25 +26,6 @@ public class GameApplicationHandle : MonoBehaviour
     {
         PlayerPrefs.DeleteAll();
         PlayerData.Load();
-        
-        // init firebase
-        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
-        {
-            var dependencyStatus = task.Result;
-            if (dependencyStatus == Firebase.DependencyStatus.Available)
-            {
-                FirebaseApp app = Firebase.FirebaseApp.DefaultInstance;
-                
-                // Initialize ads
-                AdsManager.Initialize();
-            }
-            else
-            {
-                UnityEngine.Debug.LogError(System.String.Format("Firebase failed to initialize! {0}", dependencyStatus));
-            }
-            
-            Analytics.FireAppStart();
-        });
     }
 
     private void OnApplicationQuit()
@@ -54,12 +35,9 @@ public class GameApplicationHandle : MonoBehaviour
             Instance.StopAllCoroutines();
         }
         
-#if !UNITY_EDITOR
         AdsManager.Shutdown();
-#endif
-        
         GC.Collect(100, GCCollectionMode.Forced);
-    } 
+    }
 
     public static Coroutine BeginRoutine(IEnumerator routine)
     {
