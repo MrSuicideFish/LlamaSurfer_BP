@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Level_1_Cfg
   m_EditorClassIdentifier: 
   sceneIndex: 1
-  maxPoints: 0
+  maxPoints: 50
