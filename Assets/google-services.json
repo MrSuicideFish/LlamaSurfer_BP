@@ -7,12 +7,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:134398242925:android:287c126e15bc4faf284f64",
+        "mobilesdk_app_id": "1:134398242925:android:25e0ea9b0153c5fb284f64",
         "android_client_info": {
           "package_name": "com.brokenpixel.llamasurfer"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "134398242925-pu3fu5t7mb6eh38b3mpr89qvan0lt0u4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brokenpixel.llamasurfer",
+            "certificate_hash": "53412af041a0e51884bdfdc7528a0f238560b04d"
+          }
+        },
         {
           "client_id": "134398242925-vju467c886a2mqt25rvcl3oabc89v586.apps.googleusercontent.com",
           "client_type": 3
@@ -32,7 +40,8 @@
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-9008022025116492~3184083453"
     }
   ],
   "configuration_version": "1"

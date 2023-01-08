@@ -14,7 +14,8 @@ public class GameUIManager
         PreGame,
         GameSoftFail,
         GameHardFail,
-        GameSuccess
+        GameSuccess,
+        Opening
     }
 
     private static GameUIManager _instance;
@@ -84,6 +85,10 @@ public class GameUIManager
         LevelFailedScreenController levelHardFailController = new LevelFailedScreenController(
             _view.GetScreenView(GameScreenID.GameHardFail));
         _screens.Add(GameScreenID.GameHardFail, levelHardFailController);
+
+        OpeningScreenController openingScreenController = new OpeningScreenController(
+            _view.GetScreenView(GameScreenID.Opening));
+        _screens.Add(GameScreenID.Opening, openingScreenController);
         
         ToggleControlPanel(false);
         ToggleInGameHeader(false);

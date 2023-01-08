@@ -37,6 +37,21 @@ public class GameOptionsView : GameScreenView
         
     }
 
+    public void OpenTermsOfUse()
+    {
+        Application.OpenURL("http://www.brokenpixel.co/terms");
+    }
+
+    public void OpenPrivacy()
+    {
+        Application.OpenURL("http://www.brokenpixel.co/privacy");
+    }
+
+    public void OpenBrokenPixelSite()
+    {
+        Application.OpenURL("http://www.brokenpixel.co");
+    }
+
     public override IEnumerator OnShow()
     {
         yield break;
@@ -52,6 +67,8 @@ public class GameOptionsView : GameScreenView
         if (GameSystem.GetGameManager().gameHasStarted
             && GameSystem.GetGameManager().gameHasEnded)
         {
+            GameUIManager.Instance.ToggleInGameHeader(true);
+            GameUIManager.Instance.ToggleControlPanel(true);
             if (GameSystem.GetGameManager().playerHasFailed)
             {
                 if (GameSystem.GetGameManager().ShouldShowHardDeath())

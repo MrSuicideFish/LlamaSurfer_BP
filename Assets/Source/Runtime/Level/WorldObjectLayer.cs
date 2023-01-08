@@ -177,6 +177,18 @@ public class WorldObjectLayer : MonoBehaviour
                     }
                 }
             }
+
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                Transform child = transform.GetChild(i);
+                List<WorldObjectBase> objects = new List<WorldObjectBase>();
+                GetObjectsAtPosition(child.position, ref objects);
+                if (objects.Count == 0)
+                {
+                    WorldObjectBase o = child.GetComponent<WorldObjectBase>();
+                    AddObject(child.position, o);
+                }
+            }
         }
     }
 #endif
