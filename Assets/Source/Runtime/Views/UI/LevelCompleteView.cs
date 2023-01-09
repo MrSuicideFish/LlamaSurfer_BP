@@ -34,21 +34,24 @@ public class LevelCompleteView : GameScreenView
 
     private Image[] stars;
 
-    private void Start()
+    private void OnEnable()
     {
-        stars = new Image[5];
-        for (int i = 0; i < stars.Length; i++)
+        if (stars == null)
         {
-            if (i == 0)
+            stars = new Image[5];
+            for (int i = 0; i < stars.Length; i++)
             {
-                stars[i] = starPrefab;
+                if (i == 0)
+                {
+                    stars[i] = starPrefab;
+                }
+                else
+                {
+                    stars[i] = GameObject.Instantiate(starPrefab);
+                    stars[i].transform.SetParent(starsContainer, false);
+                }
+                stars[i].sprite = starDimSprite;
             }
-            else
-            {
-                stars[i] = GameObject.Instantiate(starPrefab);
-                stars[i].transform.SetParent(starsContainer, false);
-            }
-            stars[i].sprite = starDimSprite;
         }
     }
 

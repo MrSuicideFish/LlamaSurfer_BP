@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -40,6 +41,8 @@ public class GameManager : MonoBehaviour
                 GameSystem.GetTrackController().SetTrackTime(0.0f);
             }
         }
+        
+        AdsManager.ShowBanner();
     }
 
     private void OnTrackEnded()
@@ -60,6 +63,10 @@ public class GameManager : MonoBehaviour
         {
             Analytics.LevelStart(currentLevel.sceneIndex);
         }
+        
+        string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments,
+            Environment.SpecialFolderOption.None);
+        ScreenCapture.CaptureScreenshot(Path.Combine(path, "screenshot_0.png"));
     }
 
     public void EndGame(bool isWin)
@@ -68,6 +75,8 @@ public class GameManager : MonoBehaviour
         GameSystem.GetTrackController().Pause();
         GameUIManager.Instance.ToggleInGameHeader(true);
         GameUIManager.Instance.ToggleControlPanel(true);
+        
+        AdsManager.LoadInterstitial();
         
         if (isWin)
         {
