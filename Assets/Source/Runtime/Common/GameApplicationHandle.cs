@@ -27,6 +27,7 @@ public class GameApplicationHandle : MonoBehaviour
     {
         PlayerPrefs.DeleteAll();
         PlayerData.Load();
+        GameUIManager.Instance.HideAllScreens();
     }
 
     private void OnApplicationQuit()

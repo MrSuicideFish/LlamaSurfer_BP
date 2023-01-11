@@ -74,6 +74,15 @@ public class PlayerData
         File.WriteAllText(path, json);
     }
 
+    public static void ResetPlayerData()
+    {
+        SetData(DataKey.HeartCount, 3);
+        SetData(DataKey.BonusBlockCount, 0);
+        SetData(DataKey.IsAudioEnabled, true);
+        SetData(DataKey.LastLogin, DateTime.UtcNow.ToShortDateString());
+        SetData(DataKey.LastLevelCompleted, 0);
+    }
+
     public static T GetData<T>(string key, object defaultValue)
     {
         if (_loadedPlayerData.data.ContainsKey(key))

@@ -84,7 +84,7 @@ public class GameUIManagerView : MonoBehaviour
         BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false, BPAudioTrack.UI);
         GameUIManager.Instance.ToggleInGameHeader(false);
         GameUIManager.Instance.ToggleControlPanel(true);
-        ToggleScreenView(GameUIManager.GameScreenID.LevelSelect);
+        GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.LevelSelect);
     }
 
     public void ShowOptionsScreen()
@@ -93,7 +93,7 @@ public class GameUIManagerView : MonoBehaviour
         BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false,  BPAudioTrack.UI);
         GameUIManager.Instance.ToggleInGameHeader(false);
         GameUIManager.Instance.ToggleControlPanel(false);
-        ToggleScreenView(GameUIManager.GameScreenID.Options);
+        GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Options);
     }
 
     public void ToggleControlPanel(bool isOn)

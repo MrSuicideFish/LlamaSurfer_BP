@@ -10,9 +10,10 @@ public class FrontEndController : MonoBehaviour
     public VideoPlayer videoPlayer;
     public IEnumerator Start()
     {
+        GameUIManager.Instance.HideAllScreens();
         yield return DoPublisherIntro();
         yield return new WaitForSeconds(2.0f);
-        BPAudioManager.Instance.Play(AudioProperties.Get().GameMusicClip, true, BPAudioTrack.Music);
+        BPAudioManager.Instance.Play(AudioProperties.Get().MenuMusicClip, true, BPAudioTrack.Music);
         yield return DoIntroStart();
         yield return new WaitForSeconds(2.5f);
         GameApplicationHandle.Initialize();

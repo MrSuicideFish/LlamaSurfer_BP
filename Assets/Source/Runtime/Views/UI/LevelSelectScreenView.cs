@@ -20,7 +20,7 @@ public class LevelSelectScreenView : GameScreenView
                     GoToLevel(level);
                 }));
                 
-                int lastLevelCompleted = PlayerData.GetData<int>(PlayerData.DataKey.LastLevelCompleted, 1);
+                int lastLevelCompleted = PlayerData.GetData<int>(PlayerData.DataKey.LastLevelCompleted, 0);
                 btn.interactable = level <= lastLevelCompleted;
             }
         }
@@ -57,8 +57,12 @@ public class LevelSelectScreenView : GameScreenView
 
     public void Back()
     {
-        if (GameSystem.GetGameManager().gameHasStarted 
-            && GameSystem.GetGameManager().gameHasEnded)
+        if (!GameSystem.GetGameManager().gameHasStarted)
+        {
+            GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.PreGame);
+            GameUIManager.Instance.ToggleControlPanel(false);
+        }
+        else if(GameSystem.GetGameManager().gameHasEnded)
         {
             if (GameSystem.GetGameManager().playerHasFailed)
             {

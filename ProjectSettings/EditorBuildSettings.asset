@@ -24,6 +24,33 @@ EditorBuildSettings:
     path: Assets/_GAME/Levels/Level_5/Level_5.unity
     guid: fd55f5f1f679e2f409b8a5536c08f91e
   - enabled: 1
+    path: Assets/_GAME/Levels/Level_6/Level_6.unity
+    guid: f195288f79cd4ff45811cd707c8ee6a8
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_7/Level_7.unity
+    guid: 08c5364d3c76c80479f53651a7d42fcb
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_8/Level_8.unity
+    guid: f7900b6ccd279c041ae52e3f76b91aca
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_9/Level_9.unity
+    guid: c4820c06eaf9495488a39d663e492645
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_10/Level_10.unity
+    guid: a212e80f1e137114b9d03aa5b98aa66f
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_11/Level_11.unity
+    guid: b3f794c6a99a86942b3be741ce2c1213
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_12/Level_12.unity
+    guid: bfeea6abe7956724584d3b4fa39a9612
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_13/Level_13.unity
+    guid: e6c9a0821403ced4abde8d74af83ca78
+  - enabled: 1
+    path: Assets/_GAME/Levels/Level_14/Level_14.unity
+    guid: d107a9269f4c5e84f99b3785fc3aa142
+  - enabled: 1
     path: Assets/Scenes/LevelLoadScene.unity
     guid: a3de8d4a82c81344b88158d59236545c
   m_configObjects:

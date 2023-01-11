@@ -35,7 +35,10 @@ public class AudioProperties : ScriptableObject
     public AudioMixerGroup UIMixerGroup;
 
     [Header("Music")]
+    public AudioClip MenuMusicClip;
     public AudioClip GameMusicClip;
+    public AudioClip LevelCompleteClip;
+    public AudioClip LevelFailClip;
 
     [Header("UI")] 
     public AudioClip ButtonClickClip;

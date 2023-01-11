@@ -24,7 +24,8 @@ public class GameManager : MonoBehaviour
             AdsManager.ShowBanner();
             AdsManager.LoadInterstitial();
         }
-        
+
+        BPAudioManager.Instance.Play(AudioProperties.Get().GameMusicClip, true, BPAudioTrack.Music, 1.0f, 0.1f);
         TrackController track = GameSystem.GetTrackController();
         if (track != null)
         {
@@ -81,11 +82,13 @@ public class GameManager : MonoBehaviour
         GameSystem.GetTrackController().Pause();
         GameUIManager.Instance.ToggleInGameHeader(true);
         GameUIManager.Instance.ToggleControlPanel(true);
-        
+        BPAudioManager.Instance.StopMusic();
+
         AdsManager.LoadInterstitial();
         
         if (isWin)
         {
+            BPAudioManager.Instance.Play(AudioProperties.Get().LevelCompleteClip, false, BPAudioTrack.Music);
             playerHasFailed = false;
             ClearCheckpoint();
             LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
@@ -104,6 +107,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            BPAudioManager.Instance.Play(AudioProperties.Get().LevelFailClip, false, BPAudioTrack.Music);
             playerHasFailed = true;
 
             if (ShouldShowHardDeath())
