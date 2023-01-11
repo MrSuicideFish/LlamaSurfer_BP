@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +14,17 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
+        if (!GameApplicationHandle.HasInitialized)
+        {
+            GameApplicationHandle.Initialize();
+        }
+        else
+        {
+            AdsManager.LoadRewarded();
+            AdsManager.ShowBanner();
+            AdsManager.LoadInterstitial();
+        }
+        
         TrackController track = GameSystem.GetTrackController();
         if (track != null)
         {
@@ -29,7 +37,7 @@ public class GameManager : MonoBehaviour
         
             // try get last checkpoint
             int lastCheckpoint = PlayerPrefs.GetInt(PlayerData.DataKey.LastCheckpoint, 0);
-            if (lastCheckpoint > 0)
+            if (lastCheckpoint > 0 && lastCheckpoint < track.Checkpoints.Length)
             {
                 float lastCheckpointTime = track.Checkpoints[lastCheckpoint];
                 track.SetTrackTime(lastCheckpointTime);
@@ -41,8 +49,6 @@ public class GameManager : MonoBehaviour
                 GameSystem.GetTrackController().SetTrackTime(0.0f);
             }
         }
-        
-        AdsManager.ShowBanner();
     }
 
     private void OnTrackEnded()
@@ -82,13 +88,19 @@ public class GameManager : MonoBehaviour
         {
             playerHasFailed = false;
             ClearCheckpoint();
-            GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSuccess);
-
             LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
             if (currentLevel != null)
             {
+                int lastLevelCompleted = PlayerData.GetData<int>(PlayerData.DataKey.LastLevelCompleted, 1);
+                if (currentLevel.sceneIndex > lastLevelCompleted)
+                {
+                    PlayerData.SetData(PlayerData.DataKey.LastLevelCompleted, currentLevel.sceneIndex);
+                }
                 Analytics.LevelComplete(currentLevel.sceneIndex, points, currentLevel.maxPoints);
             }
+            
+            PlayerData.Save();
+            GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSuccess);
         }
         else
         {
@@ -123,6 +135,7 @@ public class GameManager : MonoBehaviour
         if (currentLevel != null)
         {
             Analytics.CheckpointReached(currentLevel.sceneIndex, checkpointIndex+1);
+            BPAudioManager.Instance.Play(AudioProperties.Get().CheckpointGrantedClip, false, BPAudioTrack.SFX);
         }
     }
 
@@ -133,7 +146,8 @@ public class GameManager : MonoBehaviour
 
     public bool ShouldShowHardDeath()
     {
-        return PlayerData.GetData<int>(PlayerData.DataKey.HeartCount, 0) == 0;
+        if (startCheckpoint == -1 || startCheckpoint == 0) return true;
+        return PlayerData.GetData<int>(PlayerData.DataKey.HeartCount, 3) == 0;
     }
 
     public void AddPoints(int amount)

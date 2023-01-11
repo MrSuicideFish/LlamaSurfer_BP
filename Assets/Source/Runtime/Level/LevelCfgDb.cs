@@ -36,7 +36,7 @@ public class LevelCfgDb : ScriptableObject
 
     public static LevelCfg GetLevelByBuildIndex(int sceneIndex)
     {
-        foreach (LevelCfg cfg in instance.levelsCfgs)
+        foreach (LevelCfg cfg in Instance.levelsCfgs)
         {
             if (cfg.sceneIndex == sceneIndex)
             {

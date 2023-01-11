@@ -2,14 +2,16 @@
 
 public class GameSettings
 {
-    private const string AudioMutedKey = "AudioMuted";
+    private const string AudioEnabledKey = "AudioEnabled";
 
-    public static void ToggleAudio(bool isOn)
+    public static void ToggleAudio(bool isEnabled)
     {
-        PlayerPrefs.SetInt(AudioMutedKey, isOn ? 1 : 0);
+        PlayerData.SetData(PlayerData.DataKey.IsAudioEnabled, isEnabled);
+        BPAudioManager.Instance.ToggleAudioEnabled(isEnabled);
+        PlayerPrefs.Save();
     }
-    public static bool IsAudioMuted()
+    public static bool IsAudioEnabled()
     {
-        return PlayerPrefs.GetInt(AudioMutedKey, 1) == 0;
+        return PlayerData.GetData<bool>(PlayerData.DataKey.IsAudioEnabled, true);
     }
 }

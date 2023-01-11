@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,24 +8,79 @@ public static class LevelLoader
     private const int DEFAULT_LEVEL_BUILD_IDX = 1;
     private const string LoadingScreenSceneName = "LevelLoadScene";
 
-    public static void GoToNextLevel(Action onLoadComplete = null)
+    public static void GoToLevel(int levelBuildIndex, Action onLoadComplete = null)
     {
-        LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
-        if (currentLevel != null)
+        try
         {
-            LevelCfg nextLevel = LevelCfgDb.GetLevelByBuildIndex(currentLevel.sceneIndex + 1);
+            LevelCfg nextLevel = LevelCfgDb.GetLevelByBuildIndex(levelBuildIndex);
             if (nextLevel != null)
             {
                 GameApplicationHandle.BeginRoutine(DoLevelLoad(nextLevel.sceneIndex, onLoadComplete));
             }
             else
             {
-                Debug.Log("Failed to load next level. Next level Cfg is NULL");
+                Debug.Log("Failed to load progression level. Level Cfg is NULL");
             }
         }
-        else
+        catch (Exception e)
         {
-            GameApplicationHandle.BeginRoutine(DoLevelLoad(DEFAULT_LEVEL_BUILD_IDX, onLoadComplete));
+            
+        }
+    }
+    
+    public static void GoToProgressionLevel(Action onLoadComplete = null)
+    {
+        try
+        {
+            LevelCfg finalLevel = LevelCfgDb.Instance.levelsCfgs[LevelCfgDb.Instance.levelsCfgs.Length - 1];
+            if (finalLevel != null)
+            {
+                int progressLevelIdx = PlayerData.GetData<int>(PlayerData.DataKey.LastLevelCompleted, 1);
+                progressLevelIdx = Mathf.Clamp(progressLevelIdx + 1, 1, finalLevel.sceneIndex);
+
+                LevelCfg nextLevel = LevelCfgDb.GetLevelByBuildIndex(progressLevelIdx);
+                if (nextLevel != null)
+                {
+                    GameApplicationHandle.BeginRoutine(DoLevelLoad(nextLevel.sceneIndex, onLoadComplete));
+                }
+                else
+                {
+                    Debug.Log("Failed to load progression level. Level Cfg is NULL");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            onLoadComplete?.Invoke();
+        }
+
+    }
+    
+    public static void GoToNextLevel(Action onLoadComplete = null)
+    {
+        try
+        {
+            LevelCfg currentLevel = LevelCfgDb.GetCurrentLevel();
+            if (currentLevel != null)
+            {
+                LevelCfg nextLevel = LevelCfgDb.GetLevelByBuildIndex(currentLevel.sceneIndex + 1);
+                if (nextLevel != null)
+                {
+                    GameApplicationHandle.BeginRoutine(DoLevelLoad(nextLevel.sceneIndex, onLoadComplete));
+                }
+                else
+                {
+                    Debug.Log("Failed to load next level. Next level Cfg is NULL");
+                }
+            }
+            else
+            {
+                GameApplicationHandle.BeginRoutine(DoLevelLoad(DEFAULT_LEVEL_BUILD_IDX, onLoadComplete));
+            }
+        }
+        catch (Exception e)
+        {
+            
         }
     }
 

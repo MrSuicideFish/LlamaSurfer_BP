@@ -14,6 +14,8 @@ public class PlayerData
         public const string HeartCount = "numOfHearts";
         public const string BonusBlockCount = "bonusBlocks";
         public const string LastCheckpoint = "LastCheckpoint";
+        public const string LastLevelCompleted = "LastLevelCompleted";
+        public const string IsAudioEnabled = "IsAudioEnabled";
     }
 
     private static PlayerData _loadedPlayerData = new PlayerData();
@@ -50,6 +52,7 @@ public class PlayerData
             SetData(DataKey.DateCreated, DateTime.UtcNow.ToShortDateString());
             SetData(DataKey.HeartCount, 3);
             SetData(DataKey.BonusBlockCount, 0);
+            SetData(DataKey.IsAudioEnabled, true);
         }
         
         SetData(DataKey.LastLogin, DateTime.UtcNow.ToShortDateString());

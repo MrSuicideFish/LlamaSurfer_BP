@@ -67,7 +67,7 @@ public class GameUIManager
         _screens.Add(GameScreenID.Options, optionsController);
 
         LevelSelectScreenController levelSelectController = new LevelSelectScreenController(
-            _view.GetScreenView(GameScreenID.Options));
+            _view.GetScreenView(GameScreenID.LevelSelect));
         _screens.Add(GameScreenID.LevelSelect, levelSelectController);
 
         PreGameScreenController pregameController = new PreGameScreenController(

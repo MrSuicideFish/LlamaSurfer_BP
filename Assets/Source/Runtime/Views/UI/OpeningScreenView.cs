@@ -4,6 +4,7 @@ public class OpeningScreenView : GameScreenView
 {
     public void Play()
     {
-        LevelLoader.GoToNextLevel();
+        BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false, BPAudioTrack.UI);
+        LevelLoader.GoToProgressionLevel();
     }
 }

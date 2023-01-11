@@ -55,6 +55,7 @@ public class GameUIManagerView : MonoBehaviour
     public void GoToNextLevel()
     {
         Debug.Log("Going to next level");
+        BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false, BPAudioTrack.UI);
 
         AdRequestInfo adRequest = new AdRequestInfo();
         adRequest.OnAdComplete = () =>
@@ -73,12 +74,14 @@ public class GameUIManagerView : MonoBehaviour
     public void ReplayLevel()
     {
         Debug.Log("Replaying level");
+        BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false, BPAudioTrack.UI);
         LevelLoader.RestartLevel();
     }
 
     public void ShowLevelsScreen()
     {
         Debug.Log("Showing levels screen");
+        BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false, BPAudioTrack.UI);
         GameUIManager.Instance.ToggleInGameHeader(false);
         GameUIManager.Instance.ToggleControlPanel(true);
         ToggleScreenView(GameUIManager.GameScreenID.LevelSelect);
@@ -87,6 +90,7 @@ public class GameUIManagerView : MonoBehaviour
     public void ShowOptionsScreen()
     {
         Debug.Log("Showing options screen");
+        BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false,  BPAudioTrack.UI);
         GameUIManager.Instance.ToggleInGameHeader(false);
         GameUIManager.Instance.ToggleControlPanel(false);
         ToggleScreenView(GameUIManager.GameScreenID.Options);

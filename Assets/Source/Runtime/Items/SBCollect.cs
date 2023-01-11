@@ -8,6 +8,7 @@ public class SBCollect : WorldObjectBase
     {
         if (other.CompareTag("Player"))
         {
+            BPAudioManager.Instance.Play(AudioProperties.Get().BoxCollectClip, false, BPAudioTrack.SFX);
             GameSystem.GetGameManager().GivePlayerBlock();
             this.gameObject.SetActive(false);
         }

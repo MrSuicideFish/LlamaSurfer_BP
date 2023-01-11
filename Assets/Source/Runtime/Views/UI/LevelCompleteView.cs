@@ -2,6 +2,7 @@
 using System.Collections;
 using System.ComponentModel.Design.Serialization;
 using DG.Tweening;
+using DG.Tweening.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -72,7 +73,10 @@ public class LevelCompleteView : GameScreenView
             {
                 stars[i].sprite = starBrightSprite;
                 seq.Append(stars[i].transform.DOPunchScale(Vector3.one * 3, starPunchDuration, starPunchStrength,
-                    starPunchElasticity)).SetDelay(starPunchDelay);
+                    starPunchElasticity)).SetDelay(starPunchDelay).OnStart(() =>
+                {
+                    //BPAudioManager.Instance.Play(AudioProperties.Get().StarPopupClip, false);
+                });
             }
             else
             {
@@ -83,20 +87,28 @@ public class LevelCompleteView : GameScreenView
         return seq.Play();
     }
 
-    private Tween DoCountPoints(int count, int total)
+    private void DoCountPoints(int count, int total)
     {
-        int value = 0;
-        return DOTween.To(
-                () => value, x =>
-                {
-                    value = x;
-                    pointCountText.SetText("{0} / {1}", value, total);
-                }, total, pointCountDuration).SetEase(Ease.Linear)
-            .OnComplete(() =>
+        int lastVal = 0;
+        DOSetter<float> setter = value =>
+        {
+            float mod = value - (value % 1.0f);
+            if (mod > lastVal)
             {
-                pointCountText.rectTransform.DOPunchScale(Vector3.one * pointCountPunchSize, pointCountPunchDuration,
-                    pointCountPunchStrength, pointCountPunchElasticity);
-            });
+                BPAudioManager.Instance.Play(AudioProperties.Get().CoinCountClip, false, BPAudioTrack.UI,
+                    (1.0f) + (0.5f * (value / total)), 0.2f);
+                lastVal = (int) mod;
+            }
+            
+            pointCountText.SetText("{0} / {1}", Mathf.FloorToInt(value), total);
+        };
+
+        Tween t = DOTween.To(setter, 0, count, pointCountDuration).SetEase(Ease.InExpo).OnComplete(() =>
+        {
+            BPAudioManager.Instance.Play(AudioProperties.Get().CoinCountCompleteClip, false, BPAudioTrack.UI);
+            pointCountText.rectTransform.DOPunchScale(Vector3.one * pointCountPunchSize, pointCountPunchDuration,
+            pointCountPunchStrength, pointCountPunchElasticity);
+        });
     }
 
     private void HidePlayButton()

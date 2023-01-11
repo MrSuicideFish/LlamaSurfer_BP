@@ -1,11 +1,6 @@
-
-using Firebase;
-using GooglePlayGames;
-using GooglePlayGames.BasicApi;
 using System.Collections;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.AdaptivePerformance;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -17,27 +12,10 @@ public class FrontEndController : MonoBehaviour
     {
         yield return DoPublisherIntro();
         yield return new WaitForSeconds(2.0f);
+        BPAudioManager.Instance.Play(AudioProperties.Get().GameMusicClip, true, BPAudioTrack.Music);
         yield return DoIntroStart();
         yield return new WaitForSeconds(2.5f);
-        
-        PlayGamesPlatform.Instance.Authenticate((signInStatus =>
-        {
-            AdsManager.Initialize();
-        }));
-        
-        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
-        {
-            var dependencyStatus = task.Result;
-            if (dependencyStatus == DependencyStatus.Available)
-            {
-                Analytics.FireAppStart();
-            }
-        });
-        
-        AdsManager.LoadInterstitial();
-        AdsManager.LoadRewarded();
-        AdsManager.ShowBanner();
-        GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Opening);
+        GameApplicationHandle.Initialize();
         //LevelLoader.GoToNextLevel(() => { });
     }
 

@@ -1,11 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PreGameScreenView : GameScreenView
 {
     public UILevelButton[] levelButtons;
+    public TextMeshProUGUI levelNumText;
+    public TextMeshProUGUI carrotCountText;
+    public Animation instructions;
     
     public override IEnumerator OnShow()
     {
@@ -27,7 +32,17 @@ public class PreGameScreenView : GameScreenView
                 levelButtons[i].SetLevel(next, next <= currentLevel);
                 next++;
             }
+
+            levelNumText.text = $"Level {currentLevel}";
+            carrotCountText.text = levelCfg.maxPoints.ToString();
         }
+        else
+        {
+            levelNumText.text = "Error";
+            carrotCountText.text = "Error";
+        }
+
+        instructions.Play();
         
         yield break;
     }

@@ -146,9 +146,14 @@ MonoBehaviour:
   spline: {fileID: 8312223136567155197}
   _grid: {fileID: 8312223136567155198}
   _platforms: []
-  _startPlatform: {fileID: 0}
-  _finishPlatform: {fileID: 0}
-  _checkpoints: []
+  _startPlatform:
+    time: 0
+    isCheckpoint: 0
+    platform: {fileID: 0}
+  _finishPlatform:
+    time: 0
+    isCheckpoint: 0
+    platform: {fileID: 0}
   OnTrackStart:
     m_PersistentCalls:
       m_Calls: []

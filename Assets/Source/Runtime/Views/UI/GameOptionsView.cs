@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,22 +7,14 @@ public class GameOptionsView : GameScreenView
     public Image AudioToggleImg;
     public Sprite volumeOffSprite;
     public Sprite volumeOnSprite;
-    
-    public void OnEnable()
-    {
-        if (AudioToggleImg != null)
-        {
-            AudioToggleImg.sprite = GameSettings.IsAudioMuted() ? volumeOffSprite : volumeOnSprite;
-        }
-    }
 
     public void ToggleMuteButton()
     {
-        bool isMuted = GameSettings.IsAudioMuted();
-        GameSettings.ToggleAudio(!isMuted);
+        bool audioEnabled = GameSettings.IsAudioEnabled();
+        GameSettings.ToggleAudio(!audioEnabled);
         if (AudioToggleImg != null)
         {
-            AudioToggleImg.sprite = !isMuted ? volumeOffSprite : volumeOnSprite;
+            AudioToggleImg.sprite = audioEnabled ? volumeOffSprite : volumeOnSprite;
         }
     }
     
@@ -54,6 +46,11 @@ public class GameOptionsView : GameScreenView
 
     public override IEnumerator OnShow()
     {
+        if (AudioToggleImg != null)
+        {
+            AudioToggleImg.sprite = GameSettings.IsAudioEnabled() ? volumeOnSprite : volumeOffSprite;
+        }
+        
         yield break;
     }
 
@@ -64,6 +61,8 @@ public class GameOptionsView : GameScreenView
 
     public void Done()
     {
+        PlayerData.Save();
+        BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false, BPAudioTrack.UI);
         if (GameSystem.GetGameManager().gameHasStarted
             && GameSystem.GetGameManager().gameHasEnded)
         {

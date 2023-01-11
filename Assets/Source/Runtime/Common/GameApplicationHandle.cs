@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
-
+using Firebase;
+using GooglePlayGames;
 using UnityEngine;
 
 public class GameApplicationHandle : MonoBehaviour
@@ -47,5 +48,31 @@ public class GameApplicationHandle : MonoBehaviour
     public static void EndRoutine(IEnumerator routine)
     {
         Instance.StartCoroutine(routine);
+    }
+
+
+    public static bool HasInitialized { get; private set; }
+
+    public static void Initialize()
+    {
+        PlayGamesPlatform.Instance.Authenticate((signInStatus =>
+        {
+            AdsManager.Initialize();
+        }));
+        
+        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task =>
+        {
+            var dependencyStatus = task.Result;
+            if (dependencyStatus == DependencyStatus.Available)
+            {
+                Analytics.FireAppStart();
+            }
+        });
+        
+        AdsManager.LoadInterstitial();
+        AdsManager.LoadRewarded();
+        AdsManager.ShowBanner();
+        GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Opening);
+        HasInitialized = true;
     }
 }

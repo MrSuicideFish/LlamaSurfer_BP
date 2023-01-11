@@ -183,7 +183,7 @@ public class WorldObjectLayer : MonoBehaviour
                 Transform child = transform.GetChild(i);
                 List<WorldObjectBase> objects = new List<WorldObjectBase>();
                 GetObjectsAtPosition(child.position, ref objects);
-                if (objects.Count == 0)
+                if (objects != null && objects.Count == 0)
                 {
                     WorldObjectBase o = child.GetComponent<WorldObjectBase>();
                     AddObject(child.position, o);
