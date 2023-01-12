@@ -50,6 +50,15 @@ public class GameManager : MonoBehaviour
                 GameSystem.GetTrackController().SetTrackTime(0.0f);
             }
         }
+        
+        // Exhaust bonus surf blocks
+        int bonusBlockCount = PlayerData.GetData<int>(PlayerData.DataKey.BonusBlockCount, 0);
+        for (int i = 0; i < bonusBlockCount; i++)
+        {
+            GivePlayerBlock();
+        }
+
+        PlayerData.SetData(PlayerData.DataKey.BonusBlockCount, 0);
     }
 
     private void OnTrackEnded()
@@ -81,7 +90,7 @@ public class GameManager : MonoBehaviour
         gameHasEnded = true;
         GameSystem.GetTrackController().Pause();
         GameUIManager.Instance.ToggleInGameHeader(true);
-        GameUIManager.Instance.ToggleControlPanel(true);
+        GameUIManager.Instance.ToggleControlPanel(false);
         BPAudioManager.Instance.StopMusic();
 
         AdsManager.LoadInterstitial();
@@ -103,6 +112,7 @@ public class GameManager : MonoBehaviour
             }
             
             PlayerData.Save();
+            GameUIManager.Instance.ToggleControlPanel(true);
             GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameSuccess);
         }
         else
@@ -112,6 +122,7 @@ public class GameManager : MonoBehaviour
 
             if (ShouldShowHardDeath())
             {
+                GameUIManager.Instance.ToggleControlPanel(true);
                 GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.GameHardFail);
             }
             else
@@ -150,7 +161,6 @@ public class GameManager : MonoBehaviour
 
     public bool ShouldShowHardDeath()
     {
-        if (startCheckpoint == -1 || startCheckpoint == 0) return true;
         return PlayerData.GetData<int>(PlayerData.DataKey.HeartCount, 3) == 0;
     }
 

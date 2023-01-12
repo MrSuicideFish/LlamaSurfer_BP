@@ -14,6 +14,7 @@ public class GameUIManagerView : MonoBehaviour
     public GameUIView[] screens;
     public HeaderInGame inGameHeader;
     public UIControlPanel ControlPanel;
+    public Animator animator;
 
     public GameScreenView GetScreenView(GameUIManager.GameScreenID screenId)
     {
@@ -57,18 +58,25 @@ public class GameUIManagerView : MonoBehaviour
         Debug.Log("Going to next level");
         BPAudioManager.Instance.Play(AudioProperties.Get().ButtonClickClip, false, BPAudioTrack.UI);
 
-        AdRequestInfo adRequest = new AdRequestInfo();
-        adRequest.OnAdComplete = () =>
+        if (AdsManager.IsInitialized && AdsManager.IsInterstitialLoaded())
         {
-            LevelLoader.GoToNextLevel();
-        };
+            AdRequestInfo adRequest = new AdRequestInfo();
+            adRequest.OnAdComplete = () =>
+            {
+                LevelLoader.GoToNextLevel();
+            };
 
-        adRequest.OnAdShowFailed = () =>
+            adRequest.OnAdShowFailed = () =>
+            {
+                LevelLoader.GoToNextLevel();
+            };
+            
+            AdsManager.ShowInterstitial(adRequest);
+        }
+        else
         {
             LevelLoader.GoToNextLevel();
-        };
-        
-        AdsManager.ShowInterstitial(adRequest);
+        }
     }
     
     public void ReplayLevel()

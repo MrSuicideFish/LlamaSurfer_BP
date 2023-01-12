@@ -59,6 +59,7 @@ public class LevelEditor : EditorTool
     private void OnDisable()
     {
         InitGUI();
+        EditorApplication.playModeStateChanged -= OnPlayStateChanged;
         if (_editorWindow != null)
         {
             _editorWindow.Close();

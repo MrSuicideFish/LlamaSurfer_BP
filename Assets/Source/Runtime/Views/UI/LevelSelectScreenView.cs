@@ -24,12 +24,13 @@ public class LevelSelectScreenView : GameScreenView
                 btn.interactable = level <= lastLevelCompleted;
             }
         }
-        yield break;
+
+        return base.OnShow();
     }
 
     public override IEnumerator OnHide()
     {
-        yield break;
+        yield return base.OnHide();
     }
 
     public void GoToLevel(int level)

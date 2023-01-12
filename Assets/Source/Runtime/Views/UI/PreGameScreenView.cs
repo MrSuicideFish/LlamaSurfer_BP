@@ -10,7 +10,6 @@ public class PreGameScreenView : GameScreenView
     public UILevelButton[] levelButtons;
     public TextMeshProUGUI levelNumText;
     public TextMeshProUGUI carrotCountText;
-    public Animation instructions;
     
     public override IEnumerator OnShow()
     {
@@ -41,15 +40,13 @@ public class PreGameScreenView : GameScreenView
             levelNumText.text = "Error";
             carrotCountText.text = "Error";
         }
-
-        instructions.Play();
         
-        yield break;
+        yield return base.OnShow();
     }
 
     public override IEnumerator OnHide()
     {
-        yield break;
+        yield return base.OnHide();
     }
 
     private void Update()

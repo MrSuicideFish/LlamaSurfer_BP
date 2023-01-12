@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.ComponentModel.Design.Serialization;
 using DG.Tweening;
 using DG.Tweening.Core;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using Image = UnityEngine.UI.Image;
 
 public class LevelCompleteView : GameScreenView
@@ -142,6 +140,7 @@ public class LevelCompleteView : GameScreenView
 
         yield return new WaitForSeconds(2);
         ShowPlayButton();
+        yield return base.OnShow();
     }
     
     public double RoundDown(double number, int decimalPlaces)
@@ -151,6 +150,6 @@ public class LevelCompleteView : GameScreenView
 
     public override IEnumerator OnHide()
     {
-        yield break;
+        yield return base.OnHide();
     }
 }

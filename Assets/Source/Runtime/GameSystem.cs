@@ -33,14 +33,12 @@ public class GameSystem : MonoBehaviour
             }
             else
             {
-#if UNITY_EDITOR
                 Debug.Log($"Search for Game System failed. Spawning new one id: {_gameSystemID}");
                 GameSystem res = Resources.Load<GameSystem>(_gameSystemID);
                 if (res != null)
                 {
                     _inst = Object.Instantiate(res);
                 }
-#endif
             }
 
             if (_inst._gameManager == null) _inst._gameManager = _inst.GetComponentInChildren<GameManager>();

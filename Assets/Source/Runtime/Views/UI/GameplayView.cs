@@ -8,4 +8,13 @@ using UnityEngine.UI;
 
 public class GameplayView : GameScreenView
 {
+    public override IEnumerator OnHide()
+    {
+        return base.OnHide();
+    }
+
+    public override IEnumerator OnShow()
+    {
+        return base.OnShow();
+    }
 }

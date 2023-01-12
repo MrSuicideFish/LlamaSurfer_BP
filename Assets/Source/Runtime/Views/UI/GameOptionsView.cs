@@ -50,13 +50,12 @@ public class GameOptionsView : GameScreenView
         {
             AudioToggleImg.sprite = GameSettings.IsAudioEnabled() ? volumeOnSprite : volumeOffSprite;
         }
-        
-        yield break;
+        yield return base.OnShow();
     }
 
     public override IEnumerator OnHide()
     {
-        yield break;
+        yield return base.OnHide();
     }
 
     public void Done()

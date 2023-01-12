@@ -28,6 +28,7 @@ public class GameApplicationHandle : MonoBehaviour
         PlayerPrefs.DeleteAll();
         PlayerData.Load();
         GameUIManager.Instance.HideAllScreens();
+        
     }
 
     private void OnApplicationQuit()
@@ -70,9 +71,6 @@ public class GameApplicationHandle : MonoBehaviour
             }
         });
         
-        AdsManager.LoadInterstitial();
-        AdsManager.LoadRewarded();
-        AdsManager.ShowBanner();
         GameUIManager.Instance.GoToScreen(GameUIManager.GameScreenID.Opening);
         HasInitialized = true;
     }

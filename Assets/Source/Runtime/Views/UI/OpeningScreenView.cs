@@ -15,7 +15,7 @@ public class OpeningScreenView : GameScreenView
     public override IEnumerator OnShow()
     {
         resetDataButton.gameObject.SetActive(Debug.isDebugBuild);
-        yield break;
+        yield return base.OnShow();
     }
 
     public void ResetPlayerData()

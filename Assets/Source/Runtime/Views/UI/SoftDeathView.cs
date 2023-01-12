@@ -1,29 +1,43 @@
-﻿using System;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
-public class LevelFailView : GameScreenView
+public class SoftDeathView : GameScreenView
 {
-    public Button restartWithHeartsButton;
-    
     public override IEnumerator OnShow()
     {
-        int heartCount = PlayerData.GetData<int>(PlayerData.DataKey.HeartCount, 3);
-        restartWithHeartsButton.interactable = heartCount > 0;
-        yield break;
+        yield return base.OnShow();
     }
 
     public override IEnumerator OnHide()
     {
-        yield break;
+        yield return base.OnHide();
     }
 
-    public void RestartWithHeart()
+    public void RestartAtCheckpoint()
     {
         int heartCount = PlayerData.GetData<int>(PlayerData.DataKey.HeartCount, 3);
         PlayerData.SetData(PlayerData.DataKey.HeartCount, heartCount - 1);
         PlayerData.Save();
         LevelLoader.RestartLevel();
+    }
+
+    public void RestartAtCheckpointWithHay()
+    {
+        int heartCount = PlayerData.GetData<int>(PlayerData.DataKey.HeartCount, 3);
+        PlayerData.SetData(PlayerData.DataKey.HeartCount, heartCount - 1);
+
+        AdRequestInfo adRequest = new AdRequestInfo();
+        adRequest.OnRewardGranted += () =>
+        {
+            int bonusCount = PlayerData.GetData<int>(PlayerData.DataKey.BonusBlockCount, 0);
+            PlayerData.SetData(PlayerData.DataKey.BonusBlockCount, bonusCount+1);
+            PlayerData.Save();
+            LevelLoader.RestartLevel();
+        };
+        
+        PlayerData.Save();
+        AdsManager.ShowRewarded(adRequest);
     }
 
     public void RestartCompletely()

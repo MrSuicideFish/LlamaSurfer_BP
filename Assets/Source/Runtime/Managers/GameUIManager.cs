@@ -118,8 +118,8 @@ public class GameUIManager
 
     private IEnumerator ChangeScreensRoutine(GameScreenID screenId)
     {
+        _view.animator.SetInteger("GameScreenID", screenId.GetHashCode());
         _lastScreen = _activeScreen;
-        
         yield return _screens[_activeScreen].Hide();
         _view.ToggleScreenView(screenId);
         _activeScreen = screenId;
